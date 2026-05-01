@@ -1,0 +1,22 @@
+{
+    "instance_name": "C101",
+    "objective_function": "MonoCost",
+    "routes": [
+        [5, 3, 7, 8, 10, 11, 9, 6, 4, 2, 1],
+        [13, 17, 18, 19, 15, 16, 14, 12],
+        [20, 24, 25, 23, 22, 21]
+    ],
+    "cost": 1913,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 30,
+        "status": "heuristic",
+        "date": "2025-12-21 22:27:32",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 25,
+        "validated_cost": 1913,
+        "validated_num_vehicles": 3
+    }
+}
