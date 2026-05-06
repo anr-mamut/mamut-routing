@@ -19,21 +19,16 @@
     ],
     "cost": 11878,
     "metadata": {
+        "method": "hgs-v3",
         "seed": 42,
         "time_limit_s": 30,
-        "objective_function": "MonoCost",
-        "instance_id": "mamut-n100-6eef36c",
+        "wall_time": 30.015815678052604,
+        "solver_cost": 11878,
         "vehicle_penalty": 0,
-        "source": "pyvrp",
-        "method": "hgs-v3",
-        "problem_type": "VRPTW",
-        "benchmark": "Mamut2026",
-        "metric_variant": "fastest",
-        "place_slug": "brest",
+        "authors": "Florian Rascoussier (0nyr) and Adrien Pichon (Anzury)",
         "validated_cost": 11878,
         "validated_num_routes": 15,
-        "date": "2026-04-23T12:21:01",
-        "authors": "Florian Rascoussier (0nyr) and Adrien Pichon (Anzury)"
+        "date": "2026-05-06T15:09:09"
     },
     "objective_function": "MonoCost"
 }

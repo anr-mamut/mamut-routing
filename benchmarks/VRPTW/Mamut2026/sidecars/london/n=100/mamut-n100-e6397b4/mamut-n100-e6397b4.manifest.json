@@ -4,9 +4,7 @@
     "base_name": "london_poi-n101-k12",
     "files": {
         "meta": "london_poi-n101-k12_meta.json",
-        "fastest": "london_poi-n101-k12_fastest.vrp",
-        "shortest": "london_poi-n101-k12_shortest.vrp",
-        "euclidean": "london_poi-n101-k12_euclidean.vrp"
+        "fastest": "mamut-n100-e6397b4.vrp"
     },
     "route_count": 12,
     "total_demand": 1644,

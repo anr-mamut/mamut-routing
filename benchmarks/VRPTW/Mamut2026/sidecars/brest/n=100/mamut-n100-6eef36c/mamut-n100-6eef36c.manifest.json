@@ -4,9 +4,7 @@
     "base_name": "brest_poi-n101-k14",
     "files": {
         "meta": "brest_poi-n101-k14_meta.json",
-        "fastest": "brest_poi-n101-k14_fastest.vrp",
-        "shortest": "brest_poi-n101-k14_shortest.vrp",
-        "euclidean": "brest_poi-n101-k14_euclidean.vrp"
+        "fastest": "mamut-n100-6eef36c.vrp"
     },
     "route_count": 14,
     "total_demand": 1960,
