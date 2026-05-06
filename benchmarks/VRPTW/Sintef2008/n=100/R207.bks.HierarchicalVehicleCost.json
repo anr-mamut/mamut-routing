@@ -1,0 +1,23 @@
+{
+    "instance_name": "R207",
+    "routes": [
+        [2, 57, 42, 92, 96, 18, 36, 46, 45, 86, 38, 44, 14, 43, 15, 41, 22, 23, 67, 76, 3, 79, 81, 9, 34, 78, 29, 24, 54, 21, 73, 72, 74, 75, 56, 4, 25, 55, 80, 68, 77, 12, 58, 13, 95, 98, 37, 100, 91, 85, 93, 59],
+        [26, 39, 28, 27, 69, 1, 50, 33, 65, 20, 30, 63, 64, 11, 62, 88, 52, 53, 40, 87, 97, 99, 94, 6, 84, 8, 82, 48, 47, 49, 19, 10, 90, 32, 66, 71, 35, 51, 70, 31, 7, 83, 17, 16, 61, 5, 60, 89]
+    ],
+    "cost": 997.4948714387555,
+    "metadata": {
+        "source": "nbrmh",
+        "time_limit_s": 120,
+        "scaling_factor": 1000,
+        "rounding_method": "ceil",
+        "notes": "Solved with nbrmh from paper6 vehicle-UB experiment",
+        "authors": "Florian Rascoussier (0nyr)",
+        "status": "heuristic",
+        "num_customers": 100,
+        "benchmark": "Sintef2008",
+        "date": "2026-03-25 22:32:03",
+        "validated_cost": 997.4948714387555,
+        "validated_num_vehicles": 2
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

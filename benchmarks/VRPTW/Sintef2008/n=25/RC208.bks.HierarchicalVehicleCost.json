@@ -1,0 +1,28 @@
+{
+    "instance_name": "RC208",
+    "routes": [
+        [2, 5, 8, 7, 12, 14, 16, 15, 11, 13, 9, 25, 23, 21, 18, 19, 20, 22, 24, 10, 17, 6, 4, 3, 1]
+    ],
+    "cost": 310.7711220938333,
+    "metadata": {
+        "source": "ortools",
+        "scale": 1000,
+        "time_limit_s": 30,
+        "seed": 42,
+        "vehicle_penalty": 4343145,
+        "ortools_status": "ROUTING_SUCCESS",
+        "first_solution_strategy": "8",
+        "local_search_metaheuristic": "2",
+        "is_feasible": true,
+        "used_vehicles": 1,
+        "cost_scaled": 310771,
+        "date": "2025-12-23 00:05:32",
+        "notes": "Solved with Google OR-Tools Routing Solver",
+        "authors": "Florian Rascoussier (0nyr), using Google OR-Tools",
+        "num_customers": 25,
+        "benchmark": "Sintef2008",
+        "validated_cost": 310.7711220938333,
+        "validated_num_vehicles": 1
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

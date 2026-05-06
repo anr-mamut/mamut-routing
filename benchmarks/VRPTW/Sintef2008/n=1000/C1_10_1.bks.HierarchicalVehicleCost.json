@@ -1,6 +1,5 @@
 {
     "instance_name": "C1_10_1",
-    "objective_function": "HierarchicalVehicleCost",
     "routes": [
         [6, 268, 980, 210, 574, 118, 897, 202, 547],
         [28, 775, 973, 188, 527, 245, 793, 636, 147, 747],
@@ -114,5 +113,6 @@
         "status": "heuristic",
         "validated_cost": 42478.95163927567,
         "validated_num_vehicles": 100
-    }
+    },
+    "objective_function": "HierarchicalVehicleCost"
 }

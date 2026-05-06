@@ -1,0 +1,24 @@
+{
+    "instance_name": "R203",
+    "routes": [
+        [2, 42, 15, 43, 14, 38, 44, 16, 17, 5, 37, 13],
+        [7, 48, 47, 36, 46, 45, 8, 18, 6],
+        [26, 21, 39, 23, 41, 22, 40],
+        [27, 1, 30, 20, 32, 11, 49, 19, 10, 31],
+        [50, 3, 33, 9, 35, 34, 29, 24, 4, 25, 12, 28]
+    ],
+    "cost": 6053,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 60,
+        "status": "heuristic",
+        "date": "2025-12-21 22:30:32",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 50,
+        "validated_cost": 6053,
+        "validated_num_vehicles": 5
+    },
+    "objective_function": "MonoCost"
+}

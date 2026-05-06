@@ -1,0 +1,25 @@
+{
+    "instance_name": "RC205",
+    "routes": [
+        [2, 45, 5, 42, 39, 36, 44, 40, 38, 41, 43, 35, 37, 54, 93, 96],
+        [65, 83, 64, 19, 23, 21, 18, 76, 85, 84, 51, 49, 22, 20, 24, 25, 48, 89, 91, 80],
+        [69, 98, 88, 53, 9, 10, 13, 17, 60],
+        [82, 11, 15, 16, 47, 14, 12, 78, 73, 79, 7, 6, 8, 46, 4, 3, 1, 70, 100],
+        [90, 99, 52, 57, 86, 87, 59, 75, 97, 74, 77, 58],
+        [92, 95, 63, 33, 30, 27, 28, 26, 29, 31, 32, 34, 50, 56, 66],
+        [94, 62, 67, 71, 72, 81, 61, 68, 55]
+    ],
+    "cost": 11540,
+    "metadata": {
+        "cost": 1154.0,
+        "source": "cvrplib",
+        "provided_by": "Eduardo Queiroga",
+        "provided_date": "2025-12-21",
+        "notes": "BKS provided by email from Dr. Eduardo Queiroga on behalf of CVRPLIB",
+        "status": "heuristic",
+        "source_path": "raw_benchmarks/VRPTW_CVRPLIB/Solomon/RC205.sol",
+        "validated_cost": 11540,
+        "validated_num_vehicles": 7
+    },
+    "objective_function": "MonoCost"
+}

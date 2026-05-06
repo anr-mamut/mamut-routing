@@ -1,0 +1,30 @@
+{
+    "instance_name": "C109",
+    "routes": [
+        [5, 3, 7, 8, 10, 11, 9, 6, 4, 2, 1],
+        [13, 17, 18, 19, 15, 16, 14, 12],
+        [20, 24, 25, 23, 22, 21]
+    ],
+    "cost": 191.8136197786562,
+    "metadata": {
+        "source": "ortools",
+        "scale": 1000,
+        "time_limit_s": 30,
+        "seed": 42,
+        "vehicle_penalty": 2096173,
+        "ortools_status": "ROUTING_SUCCESS",
+        "first_solution_strategy": "8",
+        "local_search_metaheuristic": "2",
+        "is_feasible": true,
+        "used_vehicles": 3,
+        "cost_scaled": 191815,
+        "date": "2025-12-23 00:04:02",
+        "notes": "Solved with Google OR-Tools Routing Solver",
+        "authors": "Florian Rascoussier (0nyr), using Google OR-Tools",
+        "num_customers": 25,
+        "benchmark": "Sintef2008",
+        "validated_cost": 191.8136197786562,
+        "validated_num_vehicles": 3
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

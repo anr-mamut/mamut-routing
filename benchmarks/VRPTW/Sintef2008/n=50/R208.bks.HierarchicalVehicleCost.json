@@ -1,0 +1,24 @@
+{
+    "instance_name": "R208",
+    "routes": [
+        [6, 37, 16, 44, 38, 14, 42, 43, 15, 41, 22, 23, 39, 25, 4, 21, 40, 2, 13],
+        [27, 30, 20, 32, 10, 11, 19, 49, 36, 47, 48, 46, 8, 45, 17, 5, 18, 7, 31, 1, 50, 3, 33, 9, 35, 34, 29, 24, 12, 26, 28]
+    ],
+    "cost": 490.0452248599336,
+    "metadata": {
+        "source": "pyvrp_hgs",
+        "seed": 42,
+        "time_limit_s": 120,
+        "scaling_factor": 10,
+        "rounding_method": "round",
+        "date": "2026-02-02 18:28:02",
+        "notes": "Solved with PyVRP (HGS) using pseudo-hierarchical objective",
+        "authors": "Florian Rascoussier (0nyr), using PyVRP",
+        "status": "heuristic",
+        "num_customers": 50,
+        "benchmark": "Sintef2008",
+        "validated_cost": 490.0452248599336,
+        "validated_num_vehicles": 2
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

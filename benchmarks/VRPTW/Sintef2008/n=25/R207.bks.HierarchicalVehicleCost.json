@@ -1,0 +1,28 @@
+{
+    "instance_name": "R207",
+    "routes": [
+        [19, 11, 1, 12, 23, 22, 15, 2, 6, 18, 8, 7, 10, 20, 9, 3, 24, 25, 4, 21, 13, 14, 16, 17, 5]
+    ],
+    "cost": 398.0415249351703,
+    "metadata": {
+        "source": "ortools",
+        "scale": 1000,
+        "time_limit_s": 30,
+        "seed": 42,
+        "vehicle_penalty": 3612025,
+        "ortools_status": "ROUTING_SUCCESS",
+        "first_solution_strategy": "8",
+        "local_search_metaheuristic": "2",
+        "is_feasible": true,
+        "used_vehicles": 1,
+        "cost_scaled": 398039,
+        "date": "2025-12-23 00:04:32",
+        "notes": "Solved with Google OR-Tools Routing Solver",
+        "authors": "Florian Rascoussier (0nyr), using Google OR-Tools",
+        "num_customers": 25,
+        "benchmark": "Sintef2008",
+        "validated_cost": 398.0415249351703,
+        "validated_num_vehicles": 1
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

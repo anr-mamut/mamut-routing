@@ -1,0 +1,27 @@
+{
+    "instance_name": "RC101",
+    "routes": [
+        [5, 45, 2, 7, 6, 8, 46, 4],
+        [11, 22, 49, 20, 24],
+        [14, 47, 12, 15, 16, 9, 10, 13, 17],
+        [23, 21, 19, 18, 48, 25],
+        [27, 29, 31, 34, 50],
+        [33, 30, 28, 26, 32],
+        [39, 36, 38, 41, 40, 43, 37, 35],
+        [42, 44, 3, 1]
+    ],
+    "cost": 9440,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 60,
+        "status": "heuristic",
+        "date": "2025-12-21 22:31:32",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 50,
+        "validated_cost": 9440,
+        "validated_num_vehicles": 8
+    },
+    "objective_function": "MonoCost"
+}

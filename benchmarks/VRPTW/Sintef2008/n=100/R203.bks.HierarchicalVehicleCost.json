@@ -1,0 +1,24 @@
+{
+    "instance_name": "R203",
+    "routes": [
+        [50, 33, 81, 65, 51, 1, 69, 32, 90, 63, 64, 11, 62, 88, 31, 30, 76, 3, 79, 78, 9, 20, 66, 71, 35, 34, 29, 68, 77, 80, 24, 25, 54, 12, 28],
+        [52, 7, 47, 36, 46, 45, 18, 27, 26, 39, 67, 23, 72, 21, 40, 53, 87, 57, 41, 22, 75, 56, 55, 4, 74, 73, 2, 13, 97, 37, 100, 98, 93, 61, 17, 5, 60, 89, 58],
+        [94, 95, 59, 92, 42, 15, 43, 14, 44, 38, 86, 16, 91, 85, 99, 96, 6, 84, 83, 8, 82, 48, 49, 19, 10, 70]
+    ],
+    "cost": 967.7541501389894,
+    "metadata": {
+        "source": "ils_best",
+        "time_limit_s": 120,
+        "scaling_factor": 1000,
+        "rounding_method": "ceil",
+        "notes": "Solved with ils_best from paper6 vehicle-UB experiment",
+        "authors": "Florian Rascoussier (0nyr)",
+        "status": "heuristic",
+        "num_customers": 100,
+        "benchmark": "Sintef2008",
+        "date": "2026-03-25 22:33:22",
+        "validated_cost": 967.7541501389894,
+        "validated_num_vehicles": 3
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

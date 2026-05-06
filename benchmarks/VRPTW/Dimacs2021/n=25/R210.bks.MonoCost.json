@@ -1,0 +1,22 @@
+{
+    "instance_name": "R210",
+    "routes": [
+        [2, 15, 23, 22, 21, 4, 25, 24],
+        [7, 11, 19, 8, 18, 6, 14, 16, 17, 5, 13],
+        [12, 3, 9, 20, 10, 1]
+    ],
+    "cost": 4046,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 30,
+        "status": "heuristic",
+        "date": "2025-12-21 22:28:32",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 25,
+        "validated_cost": 4046,
+        "validated_num_vehicles": 3
+    },
+    "objective_function": "MonoCost"
+}

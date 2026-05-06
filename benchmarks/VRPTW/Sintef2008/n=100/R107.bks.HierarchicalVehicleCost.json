@@ -1,0 +1,28 @@
+{
+    "instance_name": "R107",
+    "routes": [
+        [26, 21, 39, 23, 67, 55, 4, 25, 54],
+        [27, 76, 3, 79, 78, 34, 35, 81, 77, 28],
+        [47, 36, 46, 8, 84, 61, 85, 98, 100, 93, 96],
+        [50, 33, 65, 71, 9, 66, 20, 51, 1],
+        [52, 7, 62, 11, 64, 49, 19, 48, 82, 18, 89],
+        [53, 40, 12, 68, 29, 24, 80],
+        [59, 37, 91, 44, 14, 38, 86, 16, 17, 5, 60],
+        [69, 30, 88, 31, 10, 63, 90, 32, 70],
+        [83, 45, 99, 6, 87, 57, 2, 13, 97, 95, 94],
+        [92, 42, 43, 15, 41, 22, 75, 56, 74, 72, 73, 58]
+    ],
+    "cost": 1104.6559796126246,
+    "metadata": {
+        "instance name": "r107",
+        "authors": "Shobb<shobb@narod.ru>",
+        "date": "2018-jun-12",
+        "reference": "http://shobb.narod.ru/vrppd.html",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/R107.sol.txt",
+        "status": "heuristic",
+        "validated_cost": 1104.655979612625,
+        "validated_num_vehicles": 10
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

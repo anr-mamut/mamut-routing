@@ -1,0 +1,29 @@
+{
+    "instance_name": "R109",
+    "routes": [
+        [2, 72, 73, 21, 40, 53, 26, 54, 55, 25],
+        [5, 45, 61, 85, 99, 94, 6],
+        [27, 69, 76, 33, 81, 9, 35, 34, 24, 80],
+        [28, 12, 29, 78, 79, 3, 50, 77, 68],
+        [31, 30, 51, 71, 65, 66, 20, 70, 1],
+        [39, 67, 23, 75, 22, 41, 74, 56, 4],
+        [52, 88, 7, 18, 8, 84, 17, 60, 89],
+        [59, 14, 44, 16, 86, 38, 43, 100, 91, 93],
+        [62, 11, 64, 63, 90, 32, 10],
+        [83, 82, 19, 47, 36, 49, 46, 48],
+        [95, 92, 98, 42, 15, 57, 87, 97, 37, 96, 13, 58]
+    ],
+    "cost": 1194.7340975446027,
+    "metadata": {
+        "instance name": "r109",
+        "authors": "Shobb<shobb@narod.ru>",
+        "date": "2019-04-02",
+        "reference": "http://shobb.narod.ru/vrppd.html",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/R109.sol.txt",
+        "status": "heuristic",
+        "validated_cost": 1194.734097544604,
+        "validated_num_vehicles": 11
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

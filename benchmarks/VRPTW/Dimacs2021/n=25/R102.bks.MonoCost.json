@@ -1,0 +1,26 @@
+{
+    "instance_name": "R102",
+    "routes": [
+        [2, 15, 22, 4, 25],
+        [3, 9, 20, 1],
+        [7, 11, 19, 10],
+        [8, 17, 5],
+        [14, 16, 6, 13],
+        [18],
+        [21, 23, 24, 12]
+    ],
+    "cost": 5471,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 30,
+        "status": "heuristic",
+        "date": "2025-12-21 22:28:02",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 25,
+        "validated_cost": 5471,
+        "validated_num_vehicles": 7
+    },
+    "objective_function": "MonoCost"
+}

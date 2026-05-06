@@ -1,0 +1,28 @@
+{
+    "instance_name": "RC108",
+    "routes": [
+        [2, 6, 7, 8, 46, 4, 45, 5, 3, 1, 100],
+        [12, 14, 47, 17, 16, 15, 13, 9, 11, 10],
+        [41, 42, 44, 43, 40, 38, 37, 35, 36, 39],
+        [64, 51, 76, 89, 18, 48, 19, 20, 66],
+        [65, 83, 57, 24, 22, 49, 21, 23, 25, 77],
+        [69, 98, 88, 53, 78, 73, 79, 60, 55, 70, 68],
+        [71, 67, 62, 50, 63, 85, 84, 92, 56, 91, 80],
+        [82, 99, 52, 86, 87, 59, 97, 75, 58, 74],
+        [90, 61, 81, 96, 94, 93, 72, 54],
+        [95, 33, 30, 28, 26, 27, 29, 31, 34, 32]
+    ],
+    "cost": 1139.8214330625847,
+    "metadata": {
+        "instance name": "rc108",
+        "authors": "Shobb<shobb@narod.ru>",
+        "date": "2018-jun-12",
+        "reference": "http://shobb.narod.ru/vrppd.html",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/RC108.sol.txt",
+        "status": "heuristic",
+        "validated_cost": 1139.8214330625844,
+        "validated_num_vehicles": 10
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

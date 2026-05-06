@@ -1,0 +1,22 @@
+{
+    "instance_name": "R208",
+    "routes": [
+        [27, 69, 1, 50, 76, 33, 81, 9, 51, 20, 66, 65, 71, 35, 34, 78, 79, 3, 77, 68, 80, 29, 24, 54, 12, 26, 28],
+        [52, 18, 82, 48, 7, 88, 31, 70, 30, 32, 90, 63, 10, 62, 19, 11, 64, 49, 36, 47, 46, 8, 45, 17, 84, 83, 60, 5, 99, 96, 97, 87, 37, 98, 91, 100, 42, 57, 2, 13],
+        [53],
+        [89, 6, 94, 95, 92, 59, 93, 85, 61, 16, 86, 44, 38, 14, 43, 15, 41, 22, 75, 56, 23, 67, 39, 25, 55, 4, 72, 74, 73, 21, 40, 58]
+    ],
+    "cost": 7010,
+    "metadata": {
+        "cost": 701.0,
+        "source": "cvrplib",
+        "provided_by": "Eduardo Queiroga",
+        "provided_date": "2025-12-21",
+        "notes": "BKS provided by email from Dr. Eduardo Queiroga on behalf of CVRPLIB",
+        "status": "heuristic",
+        "source_path": "raw_benchmarks/VRPTW_CVRPLIB/Solomon/R208.sol",
+        "validated_cost": 7010,
+        "validated_num_vehicles": 4
+    },
+    "objective_function": "MonoCost"
+}

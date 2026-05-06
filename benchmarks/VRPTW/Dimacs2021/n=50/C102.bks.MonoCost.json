@@ -1,6 +1,5 @@
 {
     "instance_name": "C102",
-    "objective_function": "MonoCost",
     "routes": [
         [7, 8, 10, 11, 9, 6, 4, 2, 1, 3, 5],
         [13, 17, 18, 19, 15, 16, 14, 12],
@@ -20,5 +19,6 @@
         "num_customers": 50,
         "validated_cost": 3614,
         "validated_num_vehicles": 5
-    }
+    },
+    "objective_function": "MonoCost"
 }

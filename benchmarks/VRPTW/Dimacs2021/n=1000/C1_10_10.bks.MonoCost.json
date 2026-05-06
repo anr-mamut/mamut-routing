@@ -1,6 +1,5 @@
 {
     "instance_name": "C1_10_10",
-    "objective_function": "MonoCost",
     "routes": [
         [6, 28, 775, 973, 188, 527, 245, 793, 636, 147, 747],
         [32, 520, 686, 243, 327, 348, 900, 644, 398],
@@ -101,5 +100,6 @@
         "status": "heuristic",
         "validated_cost": 398168.0,
         "validated_num_vehicles": 90
-    }
+    },
+    "objective_function": "MonoCost"
 }

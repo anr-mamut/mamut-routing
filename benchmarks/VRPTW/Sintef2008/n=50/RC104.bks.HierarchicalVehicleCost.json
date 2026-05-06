@@ -1,0 +1,32 @@
+{
+    "instance_name": "RC104",
+    "routes": [
+        [2, 6, 7, 8, 46, 4, 45, 5, 3, 1],
+        [12, 14, 15, 11, 10, 9, 13, 16, 17, 47],
+        [22, 20, 49, 19, 23, 21, 48, 18, 25, 24],
+        [42, 44, 43, 38, 37, 35, 36, 40, 39, 41],
+        [50, 33, 32, 30, 28, 26, 27, 29, 31, 34]
+    ],
+    "cost": 546.5102603044277,
+    "metadata": {
+        "source": "ortools",
+        "scale": 1000,
+        "time_limit_s": 60,
+        "seed": 42,
+        "vehicle_penalty": 9810055,
+        "ortools_status": "ROUTING_SUCCESS",
+        "first_solution_strategy": "8",
+        "local_search_metaheuristic": "2",
+        "is_feasible": true,
+        "used_vehicles": 5,
+        "cost_scaled": 546510,
+        "date": "2025-12-23 00:08:02",
+        "notes": "Solved with Google OR-Tools Routing Solver",
+        "authors": "Florian Rascoussier (0nyr), using Google OR-Tools",
+        "num_customers": 50,
+        "benchmark": "Sintef2008",
+        "validated_cost": 546.5102603044277,
+        "validated_num_vehicles": 5
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

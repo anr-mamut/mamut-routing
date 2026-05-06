@@ -1,0 +1,21 @@
+{
+    "instance_name": "RC204",
+    "routes": [
+        [69, 98, 82, 10, 11, 15, 16, 17, 47, 14, 12, 53, 60, 78, 73, 79, 7, 8, 46, 45, 5, 3, 1, 4, 6, 2, 88, 55, 100, 70, 61, 68],
+        [80, 91, 92, 94, 62, 51, 89, 76, 18, 23, 21, 48, 19, 49, 20, 57, 99, 52, 87, 9, 13, 86, 74, 59, 97, 75, 58, 77, 25, 24, 22, 83, 65, 90],
+        [81, 96, 54, 41, 39, 42, 44, 43, 40, 36, 35, 37, 38, 72, 71, 93, 67, 84, 85, 63, 33, 32, 30, 28, 26, 27, 29, 31, 34, 50, 95, 56, 64, 66]
+    ],
+    "cost": 798.4635806927934,
+    "metadata": {
+        "instance name": "RC204",
+        "authors": "bauke",
+        "date": "21-05-13",
+        "reference": "N/A",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/RC204.sol.txt",
+        "status": "heuristic",
+        "validated_cost": 798.4635806927934,
+        "validated_num_vehicles": 3
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

@@ -1,0 +1,28 @@
+{
+    "instance_name": "C104",
+    "routes": [
+        [5, 3, 7, 8, 11, 9, 6, 4, 2, 1, 75],
+        [13, 17, 18, 19, 15, 16, 14, 12, 10],
+        [20, 24, 25, 27, 29, 30, 28, 26, 23, 22, 21],
+        [32, 33, 31, 35, 37, 38, 39, 36, 34],
+        [43, 42, 41, 40, 44, 45, 46, 48, 51, 50, 52, 49, 47],
+        [55, 54, 53, 56, 58, 60, 59, 57],
+        [67, 65, 62, 74, 72, 61, 64, 68, 66, 69],
+        [81, 78, 76, 71, 70, 73, 77, 79, 80, 63],
+        [90, 87, 86, 83, 82, 84, 85, 88, 89, 91],
+        [98, 96, 95, 94, 92, 93, 97, 100, 99]
+    ],
+    "cost": 824.776708221293,
+    "metadata": {
+        "cost": 822.9,
+        "source": "cvrplib",
+        "provided_by": "Eduardo Queiroga",
+        "provided_date": "2025-12-21",
+        "notes": "BKS provided by email from Dr. Eduardo Queiroga on behalf of CVRPLIB",
+        "status": "heuristic",
+        "source_path": "raw_benchmarks/VRPTW_CVRPLIB/Solomon/C104.sol",
+        "validated_cost": 824.776708221293,
+        "validated_num_vehicles": 10
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

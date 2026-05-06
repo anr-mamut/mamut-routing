@@ -1,6 +1,5 @@
 {
     "instance_name": "C1_6_2",
-    "objective_function": "MonoCost",
     "routes": [
         [7, 278, 427, 477, 599, 483, 182, 403, 108, 81, 130, 479],
         [9, 31, 63, 537, 383, 149, 160, 110, 317, 265, 557],
@@ -72,5 +71,6 @@
         "source_path": "raw_benchmarks/VRPTW_CVRPLIB/HG/C1_6_2.sol",
         "validated_cost": 139483,
         "validated_num_vehicles": 58
-    }
+    },
+    "objective_function": "MonoCost"
 }

@@ -1,0 +1,32 @@
+{
+    "instance_name": "RC107",
+    "routes": [
+        [2, 6, 7, 8, 5, 3, 1, 45, 46, 4, 100],
+        [11, 12, 14, 47, 17, 16, 15, 13, 9, 10],
+        [42, 44, 41, 39, 38, 36, 35, 37, 40, 43],
+        [61, 90, 81, 54, 96],
+        [65, 99, 52, 86, 74, 57, 24, 22, 20, 56],
+        [67, 31, 29, 27, 26, 28, 30, 32, 33, 91],
+        [69, 98, 88, 53, 78, 73, 79, 60, 55, 70, 68],
+        [72, 71, 93, 94, 34, 50, 80],
+        [82, 87, 59, 75, 97, 58, 77],
+        [83, 64, 49, 19, 21, 18, 48, 23, 25, 66],
+        [92, 95, 62, 84, 85, 63, 51, 76, 89]
+    ],
+    "cost": 1263.1597438752965,
+    "metadata": {
+        "source": "pyvroom_hier",
+        "time_limit_s": 1.2,
+        "scaling_factor": 1000,
+        "rounding_method": "ceil",
+        "notes": "Solved with pyvroom_hier from paper6 vehicle-UB experiment",
+        "authors": "Florian Rascoussier (0nyr)",
+        "status": "heuristic",
+        "num_customers": 100,
+        "benchmark": "Sintef2008",
+        "date": "2026-03-23 18:49:58",
+        "validated_cost": 1263.1597438752965,
+        "validated_num_vehicles": 11
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

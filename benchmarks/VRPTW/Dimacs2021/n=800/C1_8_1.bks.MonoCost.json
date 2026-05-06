@@ -1,6 +1,5 @@
 {
     "instance_name": "C1_8_1",
-    "objective_function": "MonoCost",
     "routes": [
         [6, 644, 691, 78, 565, 649],
         [7, 595, 199, 612, 771, 429, 334, 440],
@@ -94,5 +93,6 @@
         "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
         "validated_cost": 251569,
         "validated_num_vehicles": 80
-    }
+    },
+    "objective_function": "MonoCost"
 }

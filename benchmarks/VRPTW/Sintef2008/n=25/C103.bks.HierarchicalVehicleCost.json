@@ -1,6 +1,5 @@
 {
     "instance_name": "C103",
-    "objective_function": "HierarchicalVehicleCost",
     "routes": [
         [7, 8, 10, 11, 9, 6, 4, 2, 1, 3, 5],
         [13, 17, 18, 19, 15, 16, 14, 12],
@@ -26,5 +25,6 @@
         "benchmark": "Sintef2008",
         "validated_cost": 190.7376293618508,
         "validated_num_vehicles": 3
-    }
+    },
+    "objective_function": "HierarchicalVehicleCost"
 }

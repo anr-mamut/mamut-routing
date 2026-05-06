@@ -1,0 +1,35 @@
+{
+    "instance_name": "R102",
+    "routes": [
+        [14, 44, 38, 43, 100, 95],
+        [27, 69, 76, 79, 68],
+        [28, 29, 78, 34, 35, 3, 77],
+        [36, 47, 18],
+        [39, 23, 67, 55, 4, 25, 26],
+        [40, 53],
+        [42, 15, 41, 75, 56, 74, 21],
+        [50, 33, 30, 51, 9, 66, 1],
+        [52, 7, 11, 19, 49, 48, 82],
+        [62, 88, 8, 46, 17, 93, 59],
+        [63, 64, 90, 10, 31],
+        [65, 71, 81, 20, 32, 70],
+        [73, 22, 72, 54, 24, 80, 12],
+        [83, 45, 61, 84, 5, 60, 89],
+        [87, 57, 2, 58],
+        [92, 37, 98, 85, 16, 86, 91, 97, 13],
+        [94, 96, 99, 6]
+    ],
+    "cost": 1486.1194710808347,
+    "metadata": {
+        "instance name": "r102",
+        "authors": "Geir Hasle, Oddvar Kloster",
+        "date": "29.12.2003 12:16:00",
+        "reference": "Chapter in G. Hasle, K-A Lie, E. Quak (eds): Geometric Modelling, Numerical Simulation, and Optimization. ISBN 978-3-540-68782-5, Springer 2007.",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/R102.sol.txt",
+        "status": "heuristic",
+        "validated_cost": 1486.1194710808347,
+        "validated_num_vehicles": 17
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

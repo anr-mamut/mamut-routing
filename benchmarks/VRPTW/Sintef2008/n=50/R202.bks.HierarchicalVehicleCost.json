@@ -1,0 +1,29 @@
+{
+    "instance_name": "R202",
+    "routes": [
+        [27, 28, 50, 33, 29, 23, 15, 38, 44, 16, 5, 18, 40, 6, 8, 49, 46, 48, 7, 31, 10, 20, 32, 35, 34, 24, 4, 25, 26],
+        [39, 2, 42, 14, 45, 36, 47, 19, 11, 30, 1, 9, 3, 12, 21, 22, 41, 43, 37, 17, 13]
+    ],
+    "cost": 816.5868406070681,
+    "metadata": {
+        "source": "ortools",
+        "scale": 1000,
+        "time_limit_s": 60,
+        "seed": 42,
+        "vehicle_penalty": 8512003,
+        "ortools_status": "ROUTING_SUCCESS",
+        "first_solution_strategy": "8",
+        "local_search_metaheuristic": "2",
+        "is_feasible": true,
+        "used_vehicles": 2,
+        "cost_scaled": 816584,
+        "date": "2025-12-23 00:07:02",
+        "notes": "Solved with Google OR-Tools Routing Solver",
+        "authors": "Florian Rascoussier (0nyr), using Google OR-Tools",
+        "num_customers": 50,
+        "benchmark": "Sintef2008",
+        "validated_cost": 816.5868406070681,
+        "validated_num_vehicles": 2
+    },
+    "objective_function": "HierarchicalVehicleCost"
+}

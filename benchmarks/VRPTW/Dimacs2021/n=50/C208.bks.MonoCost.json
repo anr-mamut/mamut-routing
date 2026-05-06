@@ -1,0 +1,21 @@
+{
+    "instance_name": "C208",
+    "routes": [
+        [5, 2, 1, 7, 3, 4, 49, 40, 44, 46, 45, 50, 47, 42, 41, 43, 48],
+        [20, 22, 24, 27, 30, 29, 6, 32, 33, 31, 35, 37, 38, 39, 36, 34, 28, 26, 23, 18, 17, 19, 16, 14, 12, 15, 13, 25, 9, 11, 10, 8, 21]
+    ],
+    "cost": 3505,
+    "metadata": {
+        "source": "pyvrp",
+        "is_feasible": true,
+        "hgs_time_limit": 60,
+        "status": "heuristic",
+        "date": "2025-12-21 22:30:02",
+        "notes": "Solved with PyVRP's HGS",
+        "authors": "Florian Rascoussier (0nyr), using [PyVRP](https://github.com/PyVRP/PyVRP) by Niels Wouda, Leon Lan, Wouter Kool, Joop van der Heiden, Pat Mullee, and Patrick Klein",
+        "num_customers": 50,
+        "validated_cost": 3505,
+        "validated_num_vehicles": 2
+    },
+    "objective_function": "MonoCost"
+}
