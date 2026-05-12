@@ -45,6 +45,7 @@ class SitePayloadKind(str, Enum):
     SIZE_INDEX = "size_index"
     SUBSET_INDEX = "subset_index"
     INSTANCE_PAGE = "instance_page"
+    INSTANCE_PAGE_TDVRP = "instance_page_tdvrp"
     OBJECTIVES_PAGE = "objectives_page"
 
 
@@ -471,6 +472,50 @@ class InstancePagePayload(SitePayloadBase):
     source_problem_routes: dict[str, str] = Field(default_factory=dict)
     bks_entries: list[BKSPageEntry] = Field(default_factory=list)
     workbench_route_path: str = "/workbench/"
+
+
+class TDVRPEdgeSpeedProfile(BaseModel):
+    """Per-edge hourly speed profile in m/s.
+
+    coordinates is the polyline (list of [lon, lat]) of the OSM road edge in
+    geographic order so the webapp can paint it directly on a Leaflet layer
+    without a graph lookup. speeds[h] is the speed on the edge during the h-th
+    hourly bin under the simulated commuter load.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    edge_id: str
+    coordinates: list[tuple[float, float]]
+    free_flow_speed: float
+    speeds: list[float]
+
+
+class InstancePageTDVRPPayload(SitePayloadBase):
+    """Self-contained payload for the TDVRP instance viewer.
+
+    Bundles the per-edge speed profile (so the heatmap can render without a
+    server roundtrip), the time-dependent arc-cost tensor (so the table view
+    can switch with the hour slider), and a static summary in the same shape as
+    the regular InstancePagePayload.
+    """
+
+    payload_kind: Literal[SitePayloadKind.INSTANCE_PAGE_TDVRP] = SitePayloadKind.INSTANCE_PAGE_TDVRP
+
+    route_path: str
+    title: str
+    breadcrumbs: list[BreadcrumbItem]
+    locator: BenchmarkLocator
+    summary: InstancePageSummary
+    artifact_links: SiteArtifactLinks
+    workbench_route_path: str = "/workbench/"
+    num_time_bins: int = 24
+    bin_seconds: int = 3600
+    coordinates: list[tuple[float, float]]
+    edge_speed_profiles: list[TDVRPEdgeSpeedProfile] = Field(default_factory=list)
+    arc_costs_time_dependent: list[list[list[int | float]]] = Field(default_factory=list)
+    fifo_correction_ratio: float | None = None
+    traffic_intensity: float | None = None
 
 
 class ObjectivesPagePayload(SitePayloadBase):

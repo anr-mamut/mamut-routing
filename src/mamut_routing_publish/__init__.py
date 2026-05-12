@@ -22,12 +22,14 @@ from mamut_routing_publish.site_payloads import (
     HistoryDetailPayload,
     HomePagePayload,
     InstancePagePayload,
+    InstancePageTDVRPPayload,
     ObjectivesPagePayload,
     ProblemIndexPayload,
     SiteHistoryLedger,
     SitePayloadGenerationSummary,
     SitePayloadKind,
     SiteSnapshotManifest,
+    TDVRPEdgeSpeedProfile,
     derive_historical_taxonomy,
     generate_site_payloads,
 )
@@ -35,6 +37,7 @@ from mamut_routing_publish.site_webapp import (
     SiteWebappGenerationSummary,
     generate_site_webapp,
 )
+from mamut_routing_publish.tdvrp_payloads import build_tdvrp_payload_from_files
 
 __all__ = [
     "BenchmarksIndexPayload",
@@ -42,6 +45,7 @@ __all__ = [
     "HistoryDetailPayload",
     "HomePagePayload",
     "InstancePagePayload",
+    "InstancePageTDVRPPayload",
     "ObjectivesPagePayload",
     "ProblemIndexPayload",
     "ReleaseArtifactGenerationSummary",
@@ -51,6 +55,8 @@ __all__ = [
     "SitePayloadKind",
     "SiteSnapshotManifest",
     "SiteWebappGenerationSummary",
+    "TDVRPEdgeSpeedProfile",
+    "build_tdvrp_payload_from_files",
     "derive_historical_taxonomy",
     "generate_release_artifacts",
     "generate_site_payloads",

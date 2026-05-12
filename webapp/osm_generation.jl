@@ -16,6 +16,8 @@ using Hygese
 import Base.Filesystem: normpath, mkpath
 import Base.Threads: lock, unlock
 
+@isdefined(TDVRP_NUM_BINS) || include(joinpath(@__DIR__, "traffic_simulation.jl"))
+
 const MAP_CACHE = Dict{String,MapData}()
 const VERTEX_LATLON_CACHE = Dict{String,Vector{Tuple{Float64,Float64}}}()
 
@@ -2220,5 +2222,490 @@ function generate_bulk_instances_explicit(payload)
         "count" => length(results),
         "results" => results,
         "city_reports" => city_reports,
+    )
+end
+
+function default_work_categories()
+    return ["restaurant", "cafe", "school", "university", "office", "bank", "marketplace"]
+end
+
+function instance_path_plan_tdvrp(city::String,
+                                  n_customers::Int,
+                                  route_count::Int,
+                                  output_root::String)
+    city_slug = slugify(city)
+    n_nodes = n_customers + 1
+    folder = joinpath(output_root, "osm_tdvrp", city_slug, "n$(n_nodes)")
+    base = "$(city_slug)_tdvrp-n$(n_nodes)-k$(route_count)"
+    return folder, base
+end
+
+function tensor_to_nested_arrays(T::Array{Float64,3})
+    n_bins, n, _ = size(T)
+    out = Vector{Vector{Vector{Float64}}}(undef, n_bins)
+    @inbounds for h in 1:n_bins
+        layer = Vector{Vector{Float64}}(undef, n)
+        for i in 1:n
+            row = Vector{Float64}(undef, n)
+            for j in 1:n
+                row[j] = T[h, i, j]
+            end
+            layer[i] = row
+        end
+        out[h] = layer
+    end
+    return out
+end
+
+function static_fallback_costs(T::Array{Float64,3})
+    n_bins, n, _ = size(T)
+    M = Matrix{Int}(undef, n, n)
+    @inbounds for i in 1:n, j in 1:n
+        if i == j
+            M[i, j] = 0
+        else
+            s = 0.0
+            for h in 1:n_bins
+                s += T[h, i, j]
+            end
+            M[i, j] = ceil(Int, s / n_bins)
+        end
+    end
+    return M
+end
+
+function write_tdvrp_json(filepath::String,
+                          instance_name::String,
+                          num_customers::Int,
+                          vehicle_capacity::Int,
+                          coordinates::Vector{Tuple{Float64,Float64}},
+                          demands::Vector{Int},
+                          service_times::Vector{Int},
+                          time_windows::Vector{NTuple{2,Int}},
+                          T::Array{Float64,3},
+                          static_arc_costs::Matrix{Int};
+                          num_time_bins::Int=TDVRP_NUM_BINS,
+                          bin_seconds::Int=TDVRP_BIN_SECONDS,
+                          depot::Int=0)
+    payload = Dict{String,Any}(
+        "schema_version" => "1.1.0",
+        "problem_type" => "TDVRP",
+        "instance_name" => instance_name,
+        "num_customers" => num_customers,
+        "vehicle_capacity" => vehicle_capacity,
+        "depot" => depot,
+        "coordinates" => [Vector{Float64}([c[1], c[2]]) for c in coordinates],
+        "demands" => demands,
+        "service_times" => service_times,
+        "time_windows" => [Vector{Int}([tw[1], tw[2]]) for tw in time_windows],
+        "arc_costs" => [collect(static_arc_costs[i, :]) for i in 1:size(static_arc_costs, 1)],
+        "arc_costs_time_dependent" => tensor_to_nested_arrays(T),
+        "num_time_bins" => num_time_bins,
+        "bin_seconds" => bin_seconds,
+    )
+    open(filepath, "w") do io
+        JSON3.pretty(io, JSON3.read(JSON3.write(payload)))
+    end
+    return payload
+end
+
+# Parse a preview-hours payload value (Vector or comma-separated String) into a
+# sorted unique Vector{Int} of allowed hours in [0, TDVRP_NUM_BINS - 1].
+function _tdvrp_parse_preview_hours(value)
+    value === nothing && return Int[3, 8, 12, 17, 22]
+    raw_hours = Int[]
+    if value isa AbstractString
+        s = strip(String(value))
+        isempty(s) && return Int[3, 8, 12, 17, 22]
+        for tok in split(s, [',', ';', ' '])
+            tok = strip(tok)
+            isempty(tok) && continue
+            push!(raw_hours, parse(Int, tok))
+        end
+    elseif value isa AbstractVector
+        for x in value
+            push!(raw_hours, Int(x))
+        end
+    else
+        push!(raw_hours, Int(value))
+    end
+    out = Int[]
+    for h in raw_hours
+        h_clamped = clamp(h, 0, TDVRP_NUM_BINS - 1)
+        h_clamped in out || push!(out, h_clamped)
+    end
+    isempty(out) && return Int[3, 8, 12, 17, 22]
+    sort!(out)
+    return out
+end
+
+# Run the flow/speed simulation phase shared by preview / full / single TDVRP
+# handlers. Builds the commuter population, simulates hourly flows, derives the
+# per-edge BPR speeds, and generates demands. Returns a flat Dict with every
+# downstream artefact (no IGP tensor, no disk write).
+function _tdvrp_run_simulation_phase(payload, sel)
+    md = sel["md"]
+    refLLA = sel["refLLA"]
+    vertices = sel["vertices"]
+    poi_lats = sel["poi_lats"]
+    poi_lons = sel["poi_lons"]
+    source_tags = sel["source_tags"]
+    params = sel["params"]
+
+    demand_type = Int(getv(payload, :demandType, 7))
+    avg_route_size = Int(getv(payload, :avgRouteSize, 4))
+    demand_type in 1:7 || error("demandType must be between 1 and 7")
+    avg_route_size in 1:7 || error("avgRouteSize must be between 1 and 7")
+
+    seed = Int(params["seed"])
+    rng = MersenneTwister(seed)
+    customer_ll = collect(zip(poi_lats[2:end], poi_lons[2:end]))
+    D, sum_demands, _, r = generate_demands(rng, customer_ll, demand_type, avg_route_size)
+    demands = vcat([0], D)
+    cap = capacity_from_avg_route_size(r, D)
+    route_count = ceil(Int, sum_demands / float(cap))
+
+    n_commuters = Int(getv(payload, :commuterCount, 1500))
+    n_commuters >= 1 || error("commuterCount must be >= 1")
+    residential_decay_m = Float64(getv(payload, :residentialDecayMeters, 2000.0))
+    residential_seeds = Int(getv(payload, :residentialClusterSeeds, 4))
+    work_categories = haskey(payload, :workCategories) ? parse_string_array(payload[:workCategories]) : default_work_categories()
+    bpr_alpha = Float64(getv(payload, :bprAlpha, 0.15))
+    bpr_beta = Float64(getv(payload, :bprBeta, 4.0))
+    traffic_intensity = clamp(Float64(getv(payload, :trafficIntensity, 1.0)), 0.05, 10.0)
+
+    schedule = copy(DEFAULT_SCHEDULE)
+    for (k, _) in DEFAULT_SCHEDULE
+        sym_key = Symbol(k)
+        if haskey(payload, sym_key)
+            schedule[k] = Float64(payload[sym_key])
+        end
+    end
+
+    osm_path = String(params["osm_path"])
+    key = cache_key(osm_path,
+                    Bool(params["only_intersections"]),
+                    Bool(params["trim_to_connected_graph"]))
+    vertex_ll = get_vertex_latlon(md, key)
+
+    n_work_target = max(50, min(500, n_commuters))
+    work_v = Int[]
+    try
+        wv, _, _, _ = select_customers_poi(md, osm_path, refLLA, n_work_target, work_categories, rng)
+        work_v = wv
+    catch e
+        @warn "POI query for work vertices failed; falling back to clustered parametric sampling" exception=(e, catch_backtrace())
+    end
+    if length(work_v) < 5
+        @warn "Too few POI-attached work vertices ($(length(work_v))); padding with clustered parametric sample"
+        pad_v, _ = select_customers_parametric(md, vertex_ll, 1, max(50, n_work_target),
+                                               "clustered", residential_seeds, 800.0, rng)
+        work_v = unique(vcat(work_v, pad_v))
+    end
+
+    n_commuters_effective = max(1, round(Int, n_commuters * traffic_intensity))
+    commuters = sample_commuter_population(md, vertex_ll, n_commuters_effective, work_v,
+                                            residential_decay_m, residential_seeds, rng)
+
+    w_time = build_time_matrix(md)
+    flows = simulate_hourly_flows(md, commuters, schedule, w_time, rng)
+    edge_speeds = bpr_speeds(md, flows; alpha=bpr_alpha, beta=bpr_beta)
+
+    _, coords = euclidean_matrix_from_vertices(md, vertices, refLLA)
+
+    return Dict{String,Any}(
+        "md" => md,
+        "refLLA" => refLLA,
+        "vertices" => vertices,
+        "poi_lats" => poi_lats,
+        "poi_lons" => poi_lons,
+        "source_tags" => source_tags,
+        "params" => params,
+        "demands" => demands,
+        "demand_type" => demand_type,
+        "avg_route_size" => avg_route_size,
+        "sum_demands" => sum_demands,
+        "capacity" => cap,
+        "route_count" => route_count,
+        "schedule" => schedule,
+        "work_categories" => work_categories,
+        "bpr_alpha" => bpr_alpha,
+        "bpr_beta" => bpr_beta,
+        "traffic_intensity" => traffic_intensity,
+        "residential_decay_meters" => residential_decay_m,
+        "residential_cluster_seeds" => residential_seeds,
+        "commuter_count_requested" => n_commuters,
+        "commuter_count_effective" => n_commuters_effective,
+        "flows" => flows,
+        "edge_speeds" => edge_speeds,
+        "w_time" => w_time,
+        "coords" => coords,
+    )
+end
+
+# Build the JSON-friendly tdvrp_overlay dict that the workbench heatmap
+# consumes. Includes edge speed profiles, customer/depot coordinates, and a
+# stats dict. `allowed_hours` controls which slider positions the JS exposes;
+# the underlying per-edge speed arrays remain length-TDVRP_NUM_BINS regardless.
+function _tdvrp_build_overlay_dict(sim, allowed_hours::Vector{Int}; extra_stats=Dict{String,Any}())
+    md = sim["md"]
+    edge_speeds = sim["edge_speeds"]
+    flows = sim["flows"]
+    coords = sim["coords"]
+
+    edge_geom = edge_geometry_to_dict(md)
+    profiles = Vector{Dict{String,Any}}()
+    sizehint!(profiles, length(edge_speeds))
+    @inbounds for ((u, v), speeds) in edge_speeds
+        edge_key = "$(u)_$(v)"
+        geom = get(edge_geom, edge_key, nothing)
+        geom === nothing && continue
+        free_flow = maximum(speeds)
+        push!(profiles, Dict{String,Any}(
+            "edge_id" => edge_key,
+            "coordinates" => geom,
+            "free_flow_speed" => free_flow,
+            "speeds" => speeds,
+        ))
+    end
+
+    coordinates_payload = [Float64[Float64(c[1]), Float64(c[2])] for c in coords]
+
+    stats = Dict{String,Any}(
+        "commuter_count_effective" => sim["commuter_count_effective"],
+        "commuter_count_requested" => sim["commuter_count_requested"],
+        "edge_count_with_flow" => length(flows),
+        "edge_count_total" => length(edge_speeds),
+        "traffic_intensity" => sim["traffic_intensity"],
+        "bpr_alpha" => sim["bpr_alpha"],
+        "bpr_beta" => sim["bpr_beta"],
+    )
+    for (k, v) in extra_stats
+        stats[k] = v
+    end
+
+    return Dict{String,Any}(
+        "num_time_bins" => TDVRP_NUM_BINS,
+        "bin_seconds" => TDVRP_BIN_SECONDS,
+        "allowed_hours" => allowed_hours,
+        "coordinates" => coordinates_payload,
+        "depot" => 0,
+        "profiles" => profiles,
+        "stats" => stats,
+    )
+end
+
+# Cheap multi-hour preview: flows + BPR speeds, no IGP tensor, no disk write.
+function workbench_tdvrp_preview_payload(payload)
+    sel = build_generation_selection(payload)
+    n_requested = Int(getv(payload, :nCustomers, 50))
+    n_got = length(sel["vertices"]) - 1
+    n_got >= n_requested || error("Generation method produced only $n_got customers out of requested $n_requested")
+
+    sim = _tdvrp_run_simulation_phase(payload, sel)
+    allowed_hours = _tdvrp_parse_preview_hours(getv(payload, :previewHours, nothing))
+    overlay = _tdvrp_build_overlay_dict(sim, allowed_hours)
+
+    return Dict{String,Any}(
+        "ok" => true,
+        "problem_type" => "TDVRP",
+        "preview" => true,
+        "tdvrp_overlay" => overlay,
+        "summary" => Dict(
+            "preview_mode" => "tdvrp_flow_only",
+            "city" => sim["params"]["city"],
+            "method" => sim["params"]["method"],
+            "customers" => Int(sim["params"]["n_customers"]),
+            "commuter_count_effective" => sim["commuter_count_effective"],
+            "edge_count_with_flow" => length(sim["flows"]),
+            "edge_count_total" => length(sim["edge_speeds"]),
+        ),
+    )
+end
+
+# Full in-memory generation: simulation + IGP tensor + FIFO. No disk write.
+function workbench_tdvrp_full_payload(payload)
+    sel = build_generation_selection(payload)
+    n_requested = Int(getv(payload, :nCustomers, 50))
+    n_got = length(sel["vertices"]) - 1
+    n_got >= n_requested || error("Generation method produced only $n_got customers out of requested $n_requested")
+
+    sim = _tdvrp_run_simulation_phase(payload, sel)
+    T = time_dependent_arc_costs(sim["md"], sim["vertices"], sim["edge_speeds"], sim["w_time"])
+    fifo_correction = enforce_fifo!(T)
+    fifo_total_mass = sum(T)
+    fifo_correction_ratio = fifo_total_mass > 0 ? fifo_correction / fifo_total_mass : 0.0
+
+    allowed_hours = collect(0:TDVRP_NUM_BINS - 1)
+    overlay = _tdvrp_build_overlay_dict(sim, allowed_hours;
+        extra_stats=Dict{String,Any}(
+            "fifo_correction_ratio" => fifo_correction_ratio,
+            "fifo_correction_seconds" => fifo_correction,
+            "route_count" => sim["route_count"],
+            "capacity" => sim["capacity"],
+            "total_demand" => sim["sum_demands"],
+        ))
+
+    return Dict{String,Any}(
+        "ok" => true,
+        "problem_type" => "TDVRP",
+        "preview" => false,
+        "tdvrp_overlay" => overlay,
+        "summary" => Dict(
+            "preview_mode" => "tdvrp_full",
+            "city" => sim["params"]["city"],
+            "method" => sim["params"]["method"],
+            "customers" => Int(sim["params"]["n_customers"]),
+            "capacity" => sim["capacity"],
+            "total_demand" => sim["sum_demands"],
+            "route_count" => sim["route_count"],
+            "demand_type" => sim["demand_type"],
+            "avg_route_size" => sim["avg_route_size"],
+            "fifo_correction_ratio" => fifo_correction_ratio,
+            "edge_count_with_flow" => length(sim["flows"]),
+            "commuter_count_effective" => sim["commuter_count_effective"],
+        ),
+    )
+end
+
+function generate_single_tdvrp_instance(payload)
+    sel = build_generation_selection(payload)
+    n_requested = Int(getv(payload, :nCustomers, 50))
+    n_got = length(sel["vertices"]) - 1
+    n_got >= n_requested || error("Generation method produced only $n_got customers out of requested $n_requested")
+
+    sim = _tdvrp_run_simulation_phase(payload, sel)
+
+    md = sim["md"]
+    refLLA = sim["refLLA"]
+    vertices = sim["vertices"]
+    poi_lats = sim["poi_lats"]
+    poi_lons = sim["poi_lons"]
+    source_tags = sim["source_tags"]
+    params = sim["params"]
+    demands = sim["demands"]
+    cap = sim["capacity"]
+    route_count = sim["route_count"]
+    sum_demands = sim["sum_demands"]
+    edge_speeds = sim["edge_speeds"]
+    w_time = sim["w_time"]
+    coords = sim["coords"]
+
+    T = time_dependent_arc_costs(md, vertices, edge_speeds, w_time)
+    fifo_correction = enforce_fifo!(T)
+    fifo_total_mass = sum(T)
+    fifo_correction_ratio = fifo_total_mass > 0 ? fifo_correction / fifo_total_mass : 0.0
+    arc_costs_static = static_fallback_costs(T)
+
+    output_root = String(getv(payload, :outputRoot, "instances_v2"))
+    osm_path = String(params["osm_path"])
+    n_nodes = length(vertices)
+    service_time_default = Int(getv(payload, :defaultServiceTime, 600))
+    horizon_end = Int(getv(payload, :horizonEnd, TDVRP_NUM_BINS * TDVRP_BIN_SECONDS))
+    horizon_start = Int(getv(payload, :horizonStart, 0))
+    service_times = fill(service_time_default, n_nodes); service_times[1] = 0
+    time_windows = fill((horizon_start, horizon_end), n_nodes)
+
+    folder, base = instance_path_plan_tdvrp(String(params["city"]),
+                                            Int(params["n_customers"]),
+                                            route_count, output_root)
+    mkpath(folder)
+
+    f_tdvrp = base * ".tdvrp.json"
+    f_meta = base * "_meta.json"
+    f_manifest = base * "_manifest.json"
+
+    write_tdvrp_json(joinpath(folder, f_tdvrp), base, Int(params["n_customers"]), cap,
+                     coords, demands, service_times, time_windows,
+                     T, arc_costs_static)
+
+    write_instance_metadata(joinpath(folder, f_meta),
+                            String(params["city"]),
+                            osm_path,
+                            base,
+                            [f_tdvrp],
+                            refLLA,
+                            vertices,
+                            poi_lats,
+                            poi_lons,
+                            coords,
+                            demands,
+                            String(params["method"]),
+                            source_tags;
+                            only_intersections=Bool(params["only_intersections"]),
+                            trim_to_connected_graph=Bool(params["trim_to_connected_graph"]),
+                            generation_params=params,
+                            road_cache=Dict("edge_speeds" => edge_speeds_to_dict(edge_speeds),
+                                            "edge_geometry" => edge_geometry_to_dict(md)))
+
+    allowed_hours = collect(0:TDVRP_NUM_BINS - 1)
+    overlay = _tdvrp_build_overlay_dict(sim, allowed_hours;
+        extra_stats=Dict{String,Any}(
+            "fifo_correction_ratio" => fifo_correction_ratio,
+            "fifo_correction_seconds" => fifo_correction,
+            "route_count" => route_count,
+            "capacity" => cap,
+            "total_demand" => sum_demands,
+        ))
+
+    manifest = Dict(
+        "generated_at" => string(Dates.now()),
+        "base_name" => base,
+        "folder" => folder,
+        "problem_type" => "TDVRP",
+        "files" => Dict(
+            "tdvrp_json" => f_tdvrp,
+            "meta" => f_meta,
+        ),
+        "params" => params,
+        "demand_type" => sim["demand_type"],
+        "avg_route_size" => sim["avg_route_size"],
+        "route_count" => route_count,
+        "capacity" => cap,
+        "total_demand" => sum_demands,
+        "num_time_bins" => TDVRP_NUM_BINS,
+        "bin_seconds" => TDVRP_BIN_SECONDS,
+        "horizon_start" => horizon_start,
+        "horizon_end" => horizon_end,
+        "default_service_time" => service_time_default,
+        "tdvrp" => Dict(
+            "commuter_count_requested" => sim["commuter_count_requested"],
+            "commuter_count_effective" => sim["commuter_count_effective"],
+            "residential_decay_meters" => sim["residential_decay_meters"],
+            "residential_cluster_seeds" => sim["residential_cluster_seeds"],
+            "work_categories" => sim["work_categories"],
+            "bpr_alpha" => sim["bpr_alpha"],
+            "bpr_beta" => sim["bpr_beta"],
+            "traffic_intensity" => sim["traffic_intensity"],
+            "schedule" => sim["schedule"],
+            "fifo_correction_seconds" => fifo_correction,
+            "fifo_correction_ratio" => fifo_correction_ratio,
+            "edge_count_with_flow" => length(sim["flows"]),
+        ),
+    )
+    open(joinpath(folder, f_manifest), "w") do io
+        JSON3.pretty(io, JSON3.read(JSON3.write(manifest)))
+    end
+
+    return Dict(
+        "ok" => true,
+        "base_name" => base,
+        "folder" => folder,
+        "files" => manifest["files"],
+        "manifest" => f_manifest,
+        "tdvrp_overlay" => overlay,
+        "summary" => Dict(
+            "customers" => Int(params["n_customers"]),
+            "capacity" => cap,
+            "total_demand" => sum_demands,
+            "method" => String(params["method"]),
+            "demand_type" => sim["demand_type"],
+            "avg_route_size" => sim["avg_route_size"],
+            "route_count" => route_count,
+            "num_time_bins" => TDVRP_NUM_BINS,
+            "fifo_correction_ratio" => fifo_correction_ratio,
+            "edge_count_with_flow" => length(sim["flows"]),
+            "commuter_count_effective" => sim["commuter_count_effective"],
+        ),
     )
 end

@@ -1369,6 +1369,12 @@ end
 
 
 function workbench_generation_preview_payload(repo_root::AbstractString, payload; sample_root::AbstractString=default_workbench_sample_root(repo_root))
+    requested_problem_type = uppercase(strip(String(workbench_first_payload_value(payload, ("problemType", "problem_type"), "CVRP"))))
+    if requested_problem_type == "TDVRP"
+        normalized = workbench_normalize_generation_payload(payload, repo_root)
+        return workbench_tdvrp_preview_payload(normalized)
+    end
+
     city_slug = lowercase(strip(String(site_api_payload_get(payload, "city", ""))))
     isempty(city_slug) && throw(ArgumentError("Missing required preview field 'city'"))
     requested_method = String(site_api_payload_get(payload, "method", "poi_categories"))
@@ -1813,6 +1819,12 @@ function workbench_generation_full_preview_payload(payload; repo_root::AbstractS
         "MAMUT OSM generation helpers are not available; ensure webapp/osm_generation.jl is present"
     ))
 
+    requested_problem_type = uppercase(strip(String(workbench_first_payload_value(payload, ("problemType", "problem_type"), "CVRP"))))
+    if requested_problem_type == "TDVRP"
+        normalized = workbench_normalize_generation_payload(payload, repo_root)
+        return workbench_tdvrp_full_payload(normalized)
+    end
+
     normalized = workbench_normalize_generation_payload(payload, repo_root)
     sel = build_generation_selection(normalized)
     geo = preview_geojson(sel)
@@ -1866,7 +1878,7 @@ end
 const VRPTW_HORIZON_START = 0
 const VRPTW_HORIZON_END = 86400
 const VRPTW_EUCLIDEAN_SPEED_MPS = 14
-const VRPTW_PROBLEM_TYPES = ("CVRP", "VRPTW")
+const VRPTW_PROBLEM_TYPES = ("CVRP", "VRPTW", "TDVRP")
 const VRPTW_TW_METHODS = ("route_centered", "reachable_interval")
 const VRPTW_DEFAULT_TW_METHOD = "route_centered"
 
@@ -2582,6 +2594,29 @@ function workbench_generation_single_payload(payload; repo_root::AbstractString=
     ))
 
     problem_type = workbench_normalize_problem_type(workbench_first_payload_value(payload, ("problemType", "problem_type"), "CVRP"))
+
+    if problem_type == "TDVRP"
+        normalized = workbench_normalize_generation_payload(payload, repo_root)
+        raw_result = generate_single_tdvrp_instance(normalized)
+
+        folder = String(raw_result["folder"])
+        base = String(raw_result["base_name"])
+        folder_relative = workbench_to_repo_relative(repo_root, folder)
+
+        response = Dict{String,Any}(
+            "ok" => true,
+            "problem_type" => "TDVRP",
+            "base_name" => base,
+            "folder" => folder,
+            "folder_relative" => folder_relative,
+            "files" => raw_result["files"],
+            "manifest" => raw_result["manifest"],
+            "summary" => raw_result["summary"],
+            "tdvrp_overlay" => raw_result["tdvrp_overlay"],
+        )
+        return response
+    end
+
     tw_options = problem_type == "VRPTW" ? workbench_collect_tw_options(payload) : nothing
 
     normalized = workbench_normalize_generation_payload(payload, repo_root)

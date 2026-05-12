@@ -913,3 +913,96 @@ body[data-page-kind="workbench-app"] > .layout.workbench-layout {
 	border: none;
 	transform: none;
 }
+
+/* TDVRP generation fieldset — default hidden, JS toggles to "" when selected. */
+.gen-field-tdvrp {
+	display: none;
+}
+
+.gen-tdvrp-advanced {
+	margin-top: 0.5rem;
+	border-top: 1px dashed color-mix(in srgb, var(--ink) 15%, transparent);
+	padding-top: 0.5rem;
+}
+
+.gen-tdvrp-advanced > summary {
+	cursor: pointer;
+	font-weight: 600;
+	margin-bottom: 0.4rem;
+}
+
+.gen-tdvrp-advanced > .field {
+	margin-top: 0.35rem;
+}
+
+/* Floating TDVRP heatmap control panel mounted by JS on top of the map. */
+#tdvrpControls {
+	position: absolute;
+	left: 16px;
+	bottom: 16px;
+	z-index: 1000;
+	padding: 10px 14px;
+	background: rgba(20, 20, 20, 0.78);
+	color: #f7f7f7;
+	border-radius: 10px;
+	font: 13px system-ui, sans-serif;
+	min-width: 280px;
+	max-width: 380px;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+#tdvrpControls .tdvrp-title {
+	margin-bottom: 6px;
+	font-weight: 600;
+}
+
+#tdvrpControls .tdvrp-ctrl-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+#tdvrpControls .tdvrp-ctrl-row + .tdvrp-ctrl-row {
+	margin-top: 6px;
+}
+
+#tdvrpControls .tdvrp-hour-label {
+	min-width: 60px;
+}
+
+#tdvrpControls input[type="range"] {
+	flex: 1;
+	accent-color: #ffd166;
+}
+
+#tdvrpControls button {
+	background: rgba(255, 255, 255, 0.12);
+	color: #f7f7f7;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 6px;
+	padding: 3px 9px;
+	cursor: pointer;
+	font: 13px system-ui, sans-serif;
+}
+
+#tdvrpControls button:hover {
+	background: rgba(255, 255, 255, 0.2);
+}
+
+#tdvrpControls button.tdvrp-play.playing {
+	background: rgba(26, 152, 80, 0.6);
+	border-color: rgba(26, 152, 80, 0.9);
+	animation: tdvrp-pulse 1.2s ease-in-out infinite;
+}
+
+#tdvrpControls .tdvrp-stats {
+	margin-top: 8px;
+	opacity: 0.88;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+@keyframes tdvrp-pulse {
+	0%, 100% { box-shadow: 0 0 0 0 rgba(26, 152, 80, 0.5); }
+	50% { box-shadow: 0 0 0 5px rgba(26, 152, 80, 0); }
+}

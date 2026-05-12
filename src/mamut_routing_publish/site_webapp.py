@@ -347,6 +347,7 @@ def _render_workbench_shell_html(
                         <select id="genProblemTypeSelect">
                             <option value="CVRP" selected>CVRP — capacity only</option>
                             <option value="VRPTW">VRPTW — capacity + time windows</option>
+                            <option value="TDVRP">TDVRP — time-dependent travel times</option>
                         </select>
                     </label>
                     <label class="field">
@@ -455,6 +456,69 @@ def _render_workbench_shell_html(
                             <input id="genTwHorizonEndInput" type="number" min="60" value="86400" />
                         </label>
                         <p class="meta-line">Service times and arrival-time targets are sampled per the chosen TW method, then each window is repaired so depot→customer→depot is feasible.</p>
+                    </fieldset>
+                    <fieldset class="field gen-field-tdvrp" id="genTdvrpFieldset">
+                        <legend>Time-dependent traffic</legend>
+                        <label class="field">
+                            <span>Commuter count</span>
+                            <input id="genTdvrpCommuterCountInput" type="number" min="50" max="50000" step="50" value="1500" />
+                        </label>
+                        <label class="field">
+                            <span>Traffic intensity: <output id="genTdvrpTrafficIntensityValue">1.00</output></span>
+                            <input id="genTdvrpTrafficIntensityInput" type="range" min="0.05" max="3" step="0.05" value="1.0" />
+                        </label>
+                        <label class="field">
+                            <span>Preview hours (comma-separated, 0–23)</span>
+                            <input id="genTdvrpPreviewHoursInput" type="text" value="3,8,12,17,22" />
+                        </label>
+                        <details class="gen-tdvrp-advanced">
+                            <summary>Advanced parameters</summary>
+                            <label class="field">
+                                <span>BPR α</span>
+                                <input id="genTdvrpAlphaInput" type="number" step="0.01" min="0" value="0.15" />
+                            </label>
+                            <label class="field">
+                                <span>BPR β</span>
+                                <input id="genTdvrpBetaInput" type="number" step="0.5" min="1" value="4" />
+                            </label>
+                            <label class="field">
+                                <span>Residential decay (m)</span>
+                                <input id="genTdvrpResDecayInput" type="number" step="100" min="100" value="2000" />
+                            </label>
+                            <label class="field">
+                                <span>Residential cluster seeds</span>
+                                <input id="genTdvrpResSeedsInput" type="number" step="1" min="1" value="4" />
+                            </label>
+                            <label class="field">
+                                <span>Morning peak μ (h)</span>
+                                <input id="genTdvrpMorningMuInput" type="number" step="0.25" min="0" max="23" value="8.0" />
+                            </label>
+                            <label class="field">
+                                <span>Morning peak σ (h)</span>
+                                <input id="genTdvrpMorningSigmaInput" type="number" step="0.05" min="0.05" value="0.75" />
+                            </label>
+                            <label class="field">
+                                <span>Evening peak μ (h)</span>
+                                <input id="genTdvrpEveningMuInput" type="number" step="0.25" min="0" max="23" value="17.0" />
+                            </label>
+                            <label class="field">
+                                <span>Evening peak σ (h)</span>
+                                <input id="genTdvrpEveningSigmaInput" type="number" step="0.05" min="0.05" value="1.0" />
+                            </label>
+                            <label class="field">
+                                <span>Lunch share: <output id="genTdvrpLunchShareValue">0.25</output></span>
+                                <input id="genTdvrpLunchShareInput" type="range" step="0.05" min="0" max="1" value="0.25" />
+                            </label>
+                            <label class="field">
+                                <span>Default service time (s)</span>
+                                <input id="genTdvrpServiceTimeInput" type="number" step="60" min="0" value="600" />
+                            </label>
+                            <label class="field">
+                                <span>Work categories (comma-separated, blank = defaults)</span>
+                                <input id="genTdvrpWorkCategoriesInput" type="text" placeholder="restaurant,cafe,school,university,office,bank,marketplace" />
+                            </label>
+                        </details>
+                        <p class="meta-line">Display on Map = cheap multi-hour preview (flows + speeds). Generate Data = full 24-bin IGP tensor + FIFO in memory. Write Files = persist <code>.tdvrp.json</code> + sidecars.</p>
                     </fieldset>
                     <label class="field gen-field-common">
                         <span>Output root</span>

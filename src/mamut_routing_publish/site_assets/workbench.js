@@ -207,6 +207,23 @@ const genTwMethodSelect = document.getElementById("genTwMethodSelect");
 const genTwHorizonStartInput = document.getElementById("genTwHorizonStartInput");
 const genTwHorizonEndInput = document.getElementById("genTwHorizonEndInput");
 const genVrptwFieldset = document.getElementById("genVrptwFieldset");
+const genTdvrpFieldset = document.getElementById("genTdvrpFieldset");
+const genTdvrpCommuterCountInput = document.getElementById("genTdvrpCommuterCountInput");
+const genTdvrpTrafficIntensityInput = document.getElementById("genTdvrpTrafficIntensityInput");
+const genTdvrpTrafficIntensityValue = document.getElementById("genTdvrpTrafficIntensityValue");
+const genTdvrpPreviewHoursInput = document.getElementById("genTdvrpPreviewHoursInput");
+const genTdvrpAlphaInput = document.getElementById("genTdvrpAlphaInput");
+const genTdvrpBetaInput = document.getElementById("genTdvrpBetaInput");
+const genTdvrpResDecayInput = document.getElementById("genTdvrpResDecayInput");
+const genTdvrpResSeedsInput = document.getElementById("genTdvrpResSeedsInput");
+const genTdvrpMorningMuInput = document.getElementById("genTdvrpMorningMuInput");
+const genTdvrpMorningSigmaInput = document.getElementById("genTdvrpMorningSigmaInput");
+const genTdvrpEveningMuInput = document.getElementById("genTdvrpEveningMuInput");
+const genTdvrpEveningSigmaInput = document.getElementById("genTdvrpEveningSigmaInput");
+const genTdvrpLunchShareInput = document.getElementById("genTdvrpLunchShareInput");
+const genTdvrpLunchShareValue = document.getElementById("genTdvrpLunchShareValue");
+const genTdvrpServiceTimeInput = document.getElementById("genTdvrpServiceTimeInput");
+const genTdvrpWorkCategoriesInput = document.getElementById("genTdvrpWorkCategoriesInput");
 const bulkProblemTypeSelect = document.getElementById("bulkProblemTypeSelect");
 const bulkTwMethodSelect = document.getElementById("bulkTwMethodSelect");
 
@@ -215,7 +232,24 @@ const VRPTW_TW_METHOD_LABELS = {
   route_centered: "Route-centered",
   reachable_interval: "Reachable-interval",
 };
-const PROBLEM_TYPES = ["CVRP", "VRPTW"];
+const PROBLEM_TYPES = ["CVRP", "VRPTW", "TDVRP"];
+const TDVRP_NUM_BINS = 24;
+const TDVRP_DEFAULT_PREVIEW_HOURS = [3, 8, 12, 17, 22];
+const TDVRP_ANIMATION_INTERVAL_MS = 500;
+
+// Shared mutable state for the TDVRP heatmap overlay (see the helpers block
+// further down — declared early so callers like updateGenerationFieldVisibility
+// can clear the overlay before the helpers section initializes.)
+const tdvrpState = {
+  layer: null,
+  controlsEl: null,
+  profiles: [],
+  allowedHours: [],
+  currentHour: 0,
+  numBins: TDVRP_NUM_BINS,
+  animation: null,
+  refs: {},
+};
 const VRPTW_DEFAULT_HORIZON_START = 0;
 const VRPTW_DEFAULT_HORIZON_END = 86400;
 
@@ -1508,6 +1542,7 @@ function updateGenerationFieldVisibility() {
     hybrid: document.querySelectorAll(".gen-field-hybrid"),
     cluster: document.querySelectorAll(".gen-field-cluster"),
     vrptw: document.querySelectorAll(".gen-field-vrptw"),
+    tdvrp: document.querySelectorAll(".gen-field-tdvrp"),
   };
   Object.values(groups).forEach((nodes) => nodes.forEach((node) => { node.style.display = "none"; }));
   if (method === "poi_categories") {
@@ -1524,6 +1559,11 @@ function updateGenerationFieldVisibility() {
   }
   if (problemType === "VRPTW") {
     groups.vrptw.forEach((node) => { node.style.display = ""; });
+  }
+  if (problemType === "TDVRP") {
+    groups.tdvrp.forEach((node) => { node.style.display = ""; });
+  } else {
+    clearTdvrpView();
   }
 }
 
@@ -1584,6 +1624,47 @@ function currentTwHorizonEnd() {
   return Number.isFinite(raw) && raw > 0 ? raw : VRPTW_DEFAULT_HORIZON_END;
 }
 
+function currentTdvrpPayloadFields() {
+  const numOr = (el, fallback) => {
+    const raw = Number.parseFloat(el?.value ?? "");
+    return Number.isFinite(raw) ? raw : fallback;
+  };
+  const intOr = (el, fallback) => {
+    const raw = Number.parseInt(el?.value ?? "", 10);
+    return Number.isFinite(raw) ? raw : fallback;
+  };
+  const previewText = String(genTdvrpPreviewHoursInput?.value ?? "");
+  const previewHours = previewText
+    .split(/[,;\s]+/)
+    .map((tok) => Number.parseInt(tok.trim(), 10))
+    .filter((h) => Number.isFinite(h) && h >= 0 && h < TDVRP_NUM_BINS);
+  const dedupHours = Array.from(new Set(previewHours)).sort((a, b) => a - b);
+  const fields = {
+    commuterCount: intOr(genTdvrpCommuterCountInput, 1500),
+    trafficIntensity: numOr(genTdvrpTrafficIntensityInput, 1.0),
+    previewHours: dedupHours.length ? dedupHours : TDVRP_DEFAULT_PREVIEW_HOURS.slice(),
+    bprAlpha: numOr(genTdvrpAlphaInput, 0.15),
+    bprBeta: numOr(genTdvrpBetaInput, 4.0),
+    residentialDecayMeters: numOr(genTdvrpResDecayInput, 2000),
+    residentialClusterSeeds: intOr(genTdvrpResSeedsInput, 4),
+    morning_mu: numOr(genTdvrpMorningMuInput, 8.0),
+    morning_sigma: numOr(genTdvrpMorningSigmaInput, 0.75),
+    evening_mu: numOr(genTdvrpEveningMuInput, 17.0),
+    evening_sigma: numOr(genTdvrpEveningSigmaInput, 1.0),
+    lunch_share: numOr(genTdvrpLunchShareInput, 0.25),
+    defaultServiceTime: intOr(genTdvrpServiceTimeInput, 600),
+  };
+  const workText = String(genTdvrpWorkCategoriesInput?.value ?? "").trim();
+  if (workText) {
+    fields.workCategories = workText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(",");
+  }
+  return fields;
+}
+
 function currentGenerationPreviewPayload() {
   const payload = {
     city: genCitySelect.value || "",
@@ -1606,6 +1687,8 @@ function currentGenerationPreviewPayload() {
     payload.twMethod = currentTwMethod();
     payload.twHorizonStart = currentTwHorizonStart();
     payload.twHorizonEnd = currentTwHorizonEnd();
+  } else if (payload.problemType === "TDVRP") {
+    Object.assign(payload, currentTdvrpPayloadFields());
   }
   return payload;
 }
@@ -2317,6 +2400,58 @@ solveBtn.addEventListener("click", async () => {
 });
 
 genDisplayBtn.addEventListener("click", async () => {
+  if (currentProblemType() === "TDVRP") {
+    if (window.location.protocol === "file:") {
+      showToast("TDVRP preview requires the site API server over HTTP.");
+      return;
+    }
+    const operationId = `tdvrp-preview-${Date.now()}`;
+    try {
+      const payload = currentGenerationPreviewPayload();
+      startProgressBar(
+        "TDVRP flow preview",
+        operationId,
+        genDisplayBtn,
+        predictDuration("Generating Preview", { customers: payload.nCustomers }),
+      );
+      const response = await postWorkbenchJson(WORKBENCH_GENERATION_PREVIEW_PATH, payload);
+      setActiveTab("generate");
+      const overlay = response.tdvrp_overlay;
+      if (!overlay) {
+        throw new Error("TDVRP preview response is missing 'tdvrp_overlay'");
+      }
+      const summary = response.summary || {};
+      mountTdvrpView({
+        overlay,
+        title: `${summary.city || payload.city} (preview)`,
+        source: `preview · ${overlay.allowed_hours?.length || 0} hours`,
+      });
+      state.generation.generated = {
+        kind: "tdvrp_preview",
+        overlay,
+        summary,
+        payload,
+      };
+      const lines = [
+        `Problem type: TDVRP (preview)`,
+        `City: ${summary.city ?? payload.city ?? "n/a"}`,
+        `Commuters (effective): ${summary.commuter_count_effective ?? "n/a"}`,
+        `Edges with flow: ${summary.edge_count_with_flow ?? "n/a"} / ${summary.edge_count_total ?? "n/a"}`,
+        `Preview hours: ${(overlay.allowed_hours || []).join(", ")}`,
+        "Press 'Generate Data' to compute the full 24-bin tensor.",
+      ];
+      genResult.textContent = lines.join("\n");
+      completeProgressBar(operationId);
+      showToast(`TDVRP preview ready (${(overlay.profiles || []).length} edges)`);
+    } catch (error) {
+      console.error(error);
+      genResult.textContent = error.message || String(error);
+      hideAllProgressBars();
+      showToast(`TDVRP preview error: ${error.message || error}`);
+    }
+    return;
+  }
+
   if (state.generation.generated?.geojson) {
     setActiveTab("generate");
     requestPreviewFit();
@@ -2362,6 +2497,59 @@ genGenerateBtn.addEventListener("click", async () => {
   }
   const payload = currentGenerationPreviewPayload();
   const operationId = `generation-generate-${Date.now()}`;
+
+  if (payload.problemType === "TDVRP") {
+    startProgressBar(
+      "TDVRP full simulation",
+      operationId,
+      genGenerateBtn,
+      predictDuration("Generating Preview", { customers: payload.nCustomers }) * 3,
+    );
+    try {
+      const response = await postWorkbenchJson(WORKBENCH_GENERATION_GENERATE_PATH, payload);
+      const overlay = response.tdvrp_overlay;
+      if (!overlay) {
+        throw new Error("TDVRP generate response is missing 'tdvrp_overlay'");
+      }
+      const summary = response.summary || {};
+      setActiveTab("generate");
+      mountTdvrpView({
+        overlay,
+        title: `${summary.city || payload.city} (full 24h)`,
+        source: `in-memory · 24 bins`,
+      });
+      state.generation.generated = {
+        kind: "tdvrp_full",
+        overlay,
+        summary,
+        payload,
+      };
+      const fifoPct = typeof summary.fifo_correction_ratio === "number"
+        ? (summary.fifo_correction_ratio * 100).toFixed(3) + "%"
+        : "n/a";
+      const lines = [
+        `Problem type: TDVRP (full in-memory)`,
+        `City: ${summary.city ?? payload.city ?? "n/a"}`,
+        `Customers: ${summary.customers ?? payload.nCustomers ?? "n/a"}`,
+        `Routes: ${summary.route_count ?? "?"}, capacity ${summary.capacity ?? "?"}`,
+        `Commuters (effective): ${summary.commuter_count_effective ?? "n/a"}`,
+        `Edges with flow: ${summary.edge_count_with_flow ?? "n/a"}`,
+        `FIFO correction: ${fifoPct}`,
+        "Press 'Write Files' to persist .tdvrp.json + sidecars.",
+      ];
+      genResult.textContent = lines.join("\n");
+      completeProgressBar(operationId);
+      showToast(`TDVRP full simulation ready for ${summary.city ?? payload.city}`);
+    } catch (error) {
+      console.error(error);
+      state.generation.generated = null;
+      genResult.textContent = `TDVRP generation error: ${error.message || error}`;
+      hideAllProgressBars();
+      showToast(`TDVRP generation failed: ${error.message || error}`);
+    }
+    return;
+  }
+
   startProgressBar(
     "Generating Preview Data",
     operationId,
@@ -2419,6 +2607,61 @@ genFilesBtn.addEventListener("click", async () => {
     outputRoot: genOutputRootInput.value || "instances_v2",
   };
   const operationId = `generation-write-${Date.now()}`;
+
+  if (payload.problemType === "TDVRP") {
+    startProgressBar(
+      "Writing TDVRP files",
+      operationId,
+      genFilesBtn,
+      predictDuration("Generating Preview", { customers: payload.nCustomers }) * 3,
+    );
+    try {
+      const response = await postWorkbenchJson(WORKBENCH_GENERATION_SINGLE_PATH, payload);
+      const summary = response.summary || {};
+      const overlay = response.tdvrp_overlay;
+      if (overlay) {
+        mountTdvrpView({
+          overlay,
+          title: `${summary.city || payload.city} · ${response.base_name}`,
+          source: `written to ${response.folder_relative || response.folder || ""}`,
+        });
+        state.generation.generated = {
+          kind: "tdvrp_written",
+          overlay,
+          summary,
+          payload,
+          response,
+        };
+      }
+      const fifoPct = typeof summary.fifo_correction_ratio === "number"
+        ? (summary.fifo_correction_ratio * 100).toFixed(3) + "%"
+        : "n/a";
+      const lines = [
+        `Problem type: TDVRP`,
+        `Instance: ${response.base_name ?? "?"}`,
+        `Folder: ${response.folder_relative ?? response.folder ?? "?"}`,
+        `Customers: ${summary.customers ?? "?"}`,
+        `Capacity: ${summary.capacity ?? "?"}`,
+        `Routes: ${summary.route_count ?? "?"}`,
+        `FIFO correction: ${fifoPct}`,
+        `Edges with flow: ${summary.edge_count_with_flow ?? "n/a"}`,
+        "TDVRP files:",
+        `  .tdvrp.json: ${response.files?.tdvrp_json ?? ""}`,
+        `  meta: ${response.files?.meta ?? ""}`,
+        `  manifest: ${response.manifest ?? ""}`,
+      ];
+      genResult.textContent = lines.join("\n");
+      completeProgressBar(operationId);
+      showToast(`Wrote TDVRP files for ${response.base_name}`);
+    } catch (error) {
+      console.error(error);
+      genResult.textContent = `TDVRP write error: ${error.message || error}`;
+      hideAllProgressBars();
+      showToast(`TDVRP write failed: ${error.message || error}`);
+    }
+    return;
+  }
+
   startProgressBar(
     "Writing Instance Files",
     operationId,
@@ -2562,6 +2805,16 @@ if (genPoiClearBtn) {
 if (genHybridShareInput && genHybridShareValue) {
   genHybridShareInput.addEventListener("input", () => {
     genHybridShareValue.textContent = Number.parseFloat(genHybridShareInput.value).toFixed(2);
+  });
+}
+if (genTdvrpTrafficIntensityInput && genTdvrpTrafficIntensityValue) {
+  genTdvrpTrafficIntensityInput.addEventListener("input", () => {
+    genTdvrpTrafficIntensityValue.textContent = Number.parseFloat(genTdvrpTrafficIntensityInput.value).toFixed(2);
+  });
+}
+if (genTdvrpLunchShareInput && genTdvrpLunchShareValue) {
+  genTdvrpLunchShareInput.addEventListener("input", () => {
+    genTdvrpLunchShareValue.textContent = Number.parseFloat(genTdvrpLunchShareInput.value).toFixed(2);
   });
 }
 if (genMethodSelect) {
@@ -2775,4 +3028,371 @@ await loadGenerationCities();
 await benchmarkCatalogPromise;
 await setSourceKind(state.sourceKind, { sync: false });
 setActiveTab(state.activeTab, { sync: false });
+
+// -----------------------------------------------------------------------------
+// TDVRP heatmap overlay.
+// Used by (a) the Generate-tab workbench dispatch and (b) the legacy
+// ?tdvrp_demo=<url> demo entry point. The reusable helpers are:
+//   * mountTdvrpView({ overlay, title, source })   — clear + draw + controls
+//   * clearTdvrpView()                              — tear everything down
+//   * tdvrpAnimationController(state, onAdvance)    — Play/Pause/Reset stepping
+// -----------------------------------------------------------------------------
+
+const tdvrpDemoUrl = runtimeParams.get("tdvrp_demo");
+if (tdvrpDemoUrl) {
+  initTdvrpOverlay(tdvrpDemoUrl).catch((err) => {
+    console.error("[TDVRP] overlay failed", err);
+    showToast(`TDVRP overlay failed: ${err.message || err}`);
+  });
+}
+
+function tdvrpSpeedRatioColor(ratio) {
+  // RdYlGn_r: ratio in [0, 1], where 1 = free flow (green), 0 = stopped (red).
+  const r = Math.max(0, Math.min(1, ratio));
+  // Piecewise linear: 0 -> #b2182b (red), 0.5 -> #ffd166 (yellow), 1 -> #1a9850 (green).
+  const stops = [
+    [0.0, [178, 24, 43]],
+    [0.5, [255, 209, 102]],
+    [1.0, [26, 152, 80]],
+  ];
+  let lo = stops[0];
+  let hi = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i += 1) {
+    if (r >= stops[i][0] && r <= stops[i + 1][0]) {
+      lo = stops[i];
+      hi = stops[i + 1];
+      break;
+    }
+  }
+  const denom = (hi[0] - lo[0]) || 1;
+  const t = (r - lo[0]) / denom;
+  const mix = (a, b) => Math.round(a + (b - a) * t);
+  const [lr, lg, lb] = lo[1];
+  const [hr, hg, hb] = hi[1];
+  return `rgb(${mix(lr, hr)}, ${mix(lg, hg)}, ${mix(lb, hb)})`;
+}
+
+function buildTdvrpHeatmapLayer() {
+  return L.layerGroup().addTo(map);
+}
+
+function tdvrpDestroyAnimation() {
+  if (tdvrpState.animation && typeof tdvrpState.animation.stop === "function") {
+    tdvrpState.animation.stop();
+  }
+  tdvrpState.animation = null;
+}
+
+function tdvrpAnimationController({ onAdvance }) {
+  let timerId = null;
+  let playing = false;
+  let cursor = 0;
+
+  function step() {
+    const hours = tdvrpState.allowedHours;
+    if (!hours.length) {
+      stop();
+      return;
+    }
+    cursor = (cursor + 1) % hours.length;
+    onAdvance(hours[cursor]);
+  }
+
+  function start() {
+    if (playing || !tdvrpState.allowedHours.length) {
+      return;
+    }
+    playing = true;
+    const hours = tdvrpState.allowedHours;
+    const idx = hours.indexOf(tdvrpState.currentHour);
+    cursor = idx >= 0 ? idx : 0;
+    timerId = window.setInterval(step, TDVRP_ANIMATION_INTERVAL_MS);
+  }
+
+  function stop() {
+    if (timerId !== null) {
+      window.clearInterval(timerId);
+      timerId = null;
+    }
+    playing = false;
+  }
+
+  function reset() {
+    stop();
+    const hours = tdvrpState.allowedHours;
+    if (hours.length) {
+      cursor = 0;
+      onAdvance(hours[0]);
+    }
+  }
+
+  return {
+    start,
+    stop,
+    reset,
+    toggle() {
+      if (playing) { stop(); } else { start(); }
+      return playing;
+    },
+    isPlaying() { return playing; },
+    syncCursorTo(hour) {
+      const hours = tdvrpState.allowedHours;
+      const idx = hours.indexOf(hour);
+      if (idx >= 0) { cursor = idx; }
+    },
+  };
+}
+
+function clearTdvrpView() {
+  tdvrpDestroyAnimation();
+  if (tdvrpState.controlsEl && tdvrpState.controlsEl.parentNode) {
+    tdvrpState.controlsEl.parentNode.removeChild(tdvrpState.controlsEl);
+  }
+  if (tdvrpState.layer && map && map.hasLayer(tdvrpState.layer)) {
+    map.removeLayer(tdvrpState.layer);
+  }
+  tdvrpState.layer = null;
+  tdvrpState.controlsEl = null;
+  tdvrpState.profiles = [];
+  tdvrpState.allowedHours = [];
+  tdvrpState.currentHour = 0;
+  tdvrpState.refs = {};
+}
+
+function mountTdvrpView({ overlay, title, source }) {
+  if (!overlay) {
+    return;
+  }
+  clearTdvrpView();
+
+  const profiles = Array.isArray(overlay.profiles) ? overlay.profiles : (overlay.edge_speed_profiles || []);
+  const numBins = Number(overlay.num_time_bins) || TDVRP_NUM_BINS;
+  let allowedHours = Array.isArray(overlay.allowed_hours) && overlay.allowed_hours.length
+    ? overlay.allowed_hours.map((h) => Number(h)).filter((h) => Number.isFinite(h))
+    : Array.from({ length: numBins }, (_, i) => i);
+  allowedHours = Array.from(new Set(allowedHours)).sort((a, b) => a - b);
+
+  tdvrpState.profiles = profiles;
+  tdvrpState.allowedHours = allowedHours;
+  tdvrpState.numBins = numBins;
+  tdvrpState.currentHour = allowedHours[0] ?? 0;
+  tdvrpState.layer = buildTdvrpHeatmapLayer();
+
+  const controls = mountTdvrpControls({
+    overlay,
+    title,
+    source,
+    initialHour: tdvrpState.currentHour,
+  });
+  tdvrpState.controlsEl = controls.container;
+  tdvrpState.refs = controls.refs;
+
+  tdvrpState.animation = tdvrpAnimationController({
+    onAdvance(hour) {
+      tdvrpSetCurrentHour(hour, { skipAnimationSync: true });
+    },
+  });
+
+  controls.refs.playBtn?.addEventListener("click", () => {
+    const playing = tdvrpState.animation.toggle();
+    controls.refs.playBtn.classList.toggle("playing", playing);
+    controls.refs.playBtn.textContent = playing ? "⏸ Pause" : "▶ Play";
+  });
+  controls.refs.resetBtn?.addEventListener("click", () => {
+    tdvrpState.animation.reset();
+    controls.refs.playBtn?.classList.remove("playing");
+    if (controls.refs.playBtn) {
+      controls.refs.playBtn.textContent = "▶ Play";
+    }
+  });
+
+  const bounds = renderTdvrpEdges(tdvrpState.layer, profiles, tdvrpState.currentHour);
+  if (bounds && map) {
+    map.fitBounds(bounds, { padding: [30, 30] });
+  }
+  return { profileCount: profiles.length, bounds };
+}
+
+function tdvrpSetCurrentHour(hour, { skipAnimationSync = false } = {}) {
+  const allowed = tdvrpState.allowedHours;
+  if (!allowed.length) { return; }
+  let target = Number(hour);
+  if (!allowed.includes(target)) {
+    let best = allowed[0];
+    let bestDiff = Math.abs(best - target);
+    allowed.forEach((h) => {
+      const diff = Math.abs(h - target);
+      if (diff < bestDiff) { best = h; bestDiff = diff; }
+    });
+    target = best;
+  }
+  tdvrpState.currentHour = target;
+  if (tdvrpState.refs.slider) {
+    tdvrpState.refs.slider.value = String(target);
+  }
+  if (tdvrpState.refs.hourLabel) {
+    tdvrpState.refs.hourLabel.textContent = `Hour ${String(target).padStart(2, "0")}`;
+  }
+  if (tdvrpState.layer) {
+    renderTdvrpEdges(tdvrpState.layer, tdvrpState.profiles, target);
+  }
+  if (!skipAnimationSync && tdvrpState.animation) {
+    tdvrpState.animation.syncCursorTo(target);
+  }
+}
+
+function renderTdvrpEdges(layer, profiles, hour) {
+  layer.clearLayers();
+  let bounds = null;
+  profiles.forEach((profile) => {
+    const speeds = profile.speeds || [];
+    if (!speeds.length) {
+      return;
+    }
+    const freeFlow = Number(profile.free_flow_speed) || Math.max(...speeds);
+    const speed = Number(speeds[hour] ?? 0);
+    const ratio = freeFlow > 0 ? speed / freeFlow : 1;
+    const color = tdvrpSpeedRatioColor(ratio);
+    const latlngs = (profile.coordinates || [])
+      .filter((p) => Array.isArray(p) && p.length >= 2)
+      .map((p) => [Number(p[1]), Number(p[0])]);
+    if (latlngs.length < 2) {
+      return;
+    }
+    L.polyline(latlngs, {
+      color,
+      weight: 3,
+      opacity: 0.85,
+      lineCap: "round",
+    }).bindPopup(
+      `Edge <code>${profile.edge_id}</code><br/>` +
+        `Speed (h=${hour}): ${speed.toFixed(2)} m/s<br/>` +
+        `Free flow: ${freeFlow.toFixed(2)} m/s<br/>` +
+        `Ratio: ${(ratio * 100).toFixed(0)}%`,
+    ).addTo(layer);
+    latlngs.forEach((p) => {
+      if (!bounds) {
+        bounds = L.latLngBounds(p, p);
+      } else {
+        bounds.extend(p);
+      }
+    });
+  });
+  return bounds;
+}
+
+function mountTdvrpControls({ overlay, title, source, initialHour }) {
+  const container = document.createElement("div");
+  container.id = "tdvrpControls";
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "tdvrp-title";
+  titleEl.textContent = `TDVRP heatmap — ${title || "instance"}`;
+  container.appendChild(titleEl);
+
+  const hourRow = document.createElement("div");
+  hourRow.className = "tdvrp-ctrl-row";
+  const hourLabel = document.createElement("span");
+  hourLabel.className = "tdvrp-hour-label";
+  hourLabel.textContent = `Hour ${String(initialHour).padStart(2, "0")}`;
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = "0";
+  slider.max = String((overlay.num_time_bins || TDVRP_NUM_BINS) - 1);
+  slider.step = "1";
+  slider.value = String(initialHour);
+  slider.addEventListener("input", () => {
+    if (tdvrpState.animation && tdvrpState.animation.isPlaying()) {
+      tdvrpState.animation.stop();
+      playBtn.classList.remove("playing");
+      playBtn.textContent = "▶ Play";
+    }
+    tdvrpSetCurrentHour(Number(slider.value));
+  });
+  hourRow.appendChild(hourLabel);
+  hourRow.appendChild(slider);
+  container.appendChild(hourRow);
+
+  const playRow = document.createElement("div");
+  playRow.className = "tdvrp-ctrl-row";
+  const playBtn = document.createElement("button");
+  playBtn.type = "button";
+  playBtn.className = "tdvrp-play";
+  playBtn.textContent = "▶ Play";
+  const resetBtn = document.createElement("button");
+  resetBtn.type = "button";
+  resetBtn.className = "tdvrp-reset";
+  resetBtn.textContent = "⟲ Reset";
+  playRow.appendChild(playBtn);
+  playRow.appendChild(resetBtn);
+  const allowedSpan = document.createElement("span");
+  allowedSpan.style.fontSize = "11px";
+  allowedSpan.style.opacity = "0.7";
+  const allowed = overlay.allowed_hours || [];
+  allowedSpan.textContent = allowed.length && allowed.length < (overlay.num_time_bins || TDVRP_NUM_BINS)
+    ? `Allowed: ${allowed.join(", ")}`
+    : "Allowed: 0–23";
+  playRow.appendChild(allowedSpan);
+  container.appendChild(playRow);
+
+  const stats = document.createElement("div");
+  stats.className = "tdvrp-stats";
+  const overlayStats = overlay.stats || {};
+  const fifo = typeof overlayStats.fifo_correction_ratio === "number"
+    ? overlayStats.fifo_correction_ratio
+    : (typeof overlay.fifo_correction_ratio === "number" ? overlay.fifo_correction_ratio : null);
+  const intensity = typeof overlayStats.traffic_intensity === "number"
+    ? overlayStats.traffic_intensity
+    : (typeof overlay.traffic_intensity === "number" ? overlay.traffic_intensity : null);
+  const profiles = Array.isArray(overlay.profiles) ? overlay.profiles : (overlay.edge_speed_profiles || []);
+  const commutersEff = typeof overlayStats.commuter_count_effective === "number"
+    ? overlayStats.commuter_count_effective : null;
+  const edgesWithFlow = typeof overlayStats.edge_count_with_flow === "number"
+    ? overlayStats.edge_count_with_flow : null;
+  stats.innerHTML = [
+    profiles.length ? `Edges rendered: <strong>${profiles.length}</strong>` : null,
+    edgesWithFlow !== null ? `Edges with flow: <strong>${edgesWithFlow}</strong>` : null,
+    commutersEff !== null ? `Commuters (effective): <strong>${commutersEff}</strong>` : null,
+    intensity !== null ? `Traffic intensity: <strong>${intensity.toFixed(2)}</strong>` : null,
+    fifo !== null ? `FIFO correction: <strong>${(fifo * 100).toFixed(2)}%</strong>` : null,
+    source ? `<em>${source}</em>` : null,
+  ].filter(Boolean).join("<br/>");
+  container.appendChild(stats);
+
+  const mapContainer = (map && typeof map.getContainer === "function") ? map.getContainer() : document.body;
+  mapContainer.appendChild(container);
+  return { container, refs: { slider, hourLabel, playBtn, resetBtn } };
+}
+
+async function initTdvrpOverlay(url) {
+  showToast("Loading TDVRP demo payload…");
+  const resp = await fetch(url, { credentials: "same-origin" });
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status} while fetching ${url}`);
+  }
+  const payload = await resp.json();
+  const profiles = Array.isArray(payload.edge_speed_profiles) ? payload.edge_speed_profiles : [];
+  if (!profiles.length) {
+    showToast("TDVRP payload has no edge_speed_profiles to render");
+    return;
+  }
+  const overlay = {
+    num_time_bins: payload.num_time_bins || TDVRP_NUM_BINS,
+    bin_seconds: payload.bin_seconds || 3600,
+    allowed_hours: Array.from({ length: payload.num_time_bins || TDVRP_NUM_BINS }, (_, i) => i),
+    coordinates: payload.coordinates || [],
+    depot: payload.depot ?? 0,
+    profiles,
+    stats: {
+      fifo_correction_ratio: payload.fifo_correction_ratio,
+      traffic_intensity: payload.traffic_intensity,
+    },
+  };
+  mountTdvrpView({
+    overlay,
+    title: payload.title || payload.summary?.display_name || "demo",
+    source: `demo: ${url}`,
+  });
+  showToast(`TDVRP heatmap ready (${profiles.length} edges, ${overlay.num_time_bins} bins)`);
+}
 renderVisualState();

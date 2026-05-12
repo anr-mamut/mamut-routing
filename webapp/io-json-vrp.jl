@@ -2,7 +2,7 @@ using JSON3
 
 const BENCHMARK_NAMES = Set(["Sintef2008", "Dimacs2021", "Mamut2026", "Ortec2022"])
 const INSTANCE_ORIGINS = Set(["Solomon1987", "GehHom1999", "OsmCvrpGen", "Ortec2022"])
-const PROBLEM_TYPES = Set(["CVRP", "VRPTW"])
+const PROBLEM_TYPES = Set(["CVRP", "VRPTW", "TDVRP"])
 const METRIC_VARIANTS = Set(["fastest", "shortest", "euclidean"])
 const OBJECTIVE_FUNCTIONS = Set(["HierarchicalVehicleCost", "MonoCost"])
 const FAMILY_CHANGE_KINDS = Set(["added", "removed"])
@@ -114,6 +114,26 @@ struct BenchmarkInstanceVRPTW{T<:Real}
     time_windows::Vector{NTuple{2,Int}}
     depot::Int
     arc_costs::Vector{Vector{T}}
+    metadata::InstanceMetadata
+end
+
+
+struct BenchmarkInstanceTDVRP{T<:Real}
+    instance_id::String
+    instance_origin::String
+    benchmark_name::String
+    num_customers::Int
+    num_vehicles::Union{Nothing,Int}
+    vehicle_capacity::Int
+    coordinates::Vector{NTuple{2,Float64}}
+    demands::Vector{Int}
+    service_times::Vector{Int}
+    time_windows::Vector{NTuple{2,Int}}
+    depot::Int
+    arc_costs::Vector{Vector{T}}
+    arc_costs_time_dependent::Vector{Vector{Vector{T}}}
+    num_time_bins::Int
+    bin_seconds::Int
     metadata::InstanceMetadata
 end
 
@@ -800,6 +820,56 @@ function validate_vrptw_vectors(num_customers::Int, service_times::Vector{Int}, 
 end
 
 
+function normalize_arc_costs_time_dependent(values)
+    values isa AbstractVector || error("arc_costs_time_dependent must be a 3D array (bins x N x N)")
+    isempty(values) && error("arc_costs_time_dependent must not be empty")
+    layers = [collect(layer) for layer in values]
+    matrices = Vector{Vector{Vector{Any}}}(undef, length(layers))
+    for (h, layer) in enumerate(layers)
+        layer isa AbstractVector || error("Each bin in arc_costs_time_dependent must be a matrix")
+        rows = [collect(row) for row in layer]
+        isempty(rows) && error("arc_costs_time_dependent bin $h must not be empty")
+        expected_width = length(rows[1])
+        for row in rows
+            length(row) == expected_width || error("arc_costs_time_dependent bin $h has rows of unequal length")
+            for value in row
+                value isa Bool && error("arc_costs_time_dependent must contain only numeric values")
+                value isa Real || error("arc_costs_time_dependent must contain only numeric values")
+            end
+        end
+        matrices[h] = rows
+    end
+    n0 = length(matrices[1])
+    w0 = length(matrices[1][1])
+    n0 == w0 || error("arc_costs_time_dependent must be square per bin (got $n0 x $w0)")
+    for (h, m) in enumerate(matrices)
+        length(m) == n0 || error("arc_costs_time_dependent bin $h has $(length(m)) rows; expected $n0")
+        for row in m
+            length(row) == w0 || error("arc_costs_time_dependent bin $h has rows of width $(length(row)); expected $w0")
+        end
+    end
+    if all(value -> is_integral_number(value), Iterators.flatten(Iterators.flatten(matrices)))
+        return [[[coerce_int(value, "arc_costs_time_dependent") for value in row] for row in m] for m in matrices]
+    end
+    return [[[coerce_real(value, "arc_costs_time_dependent") for value in row] for row in m] for m in matrices]
+end
+
+
+function validate_tdvrp_tensor_shape(num_customers::Int, num_time_bins::Int, bin_seconds::Int, tensor)
+    expected_n = num_customers + 1
+    length(tensor) == num_time_bins || error("arc_costs_time_dependent must have num_time_bins=$num_time_bins entries (got $(length(tensor)))")
+    for (h, m) in enumerate(tensor)
+        length(m) == expected_n || error("arc_costs_time_dependent bin $h must have $expected_n rows (got $(length(m)))")
+        for row in m
+            length(row) == expected_n || error("arc_costs_time_dependent bin $h must have $expected_n columns per row")
+        end
+    end
+    num_time_bins > 0 || error("num_time_bins must be positive")
+    bin_seconds > 0 || error("bin_seconds must be positive")
+    return expected_n
+end
+
+
 function ArtifactPaths(; vrp_json, vrp, meta, manifest)
     return ArtifactPaths(
         validate_relative_path(coerce_string(vrp_json, "vrp_json")),
@@ -999,6 +1069,73 @@ function BenchmarkInstanceVRPTW(;
         time_windows_vec,
         depot_int,
         arc_costs_matrix,
+        metadata_value,
+    )
+end
+
+
+function BenchmarkInstanceTDVRP(;
+    instance_id,
+    instance_origin,
+    benchmark_name,
+    num_customers,
+    num_vehicles=nothing,
+    vehicle_capacity,
+    coordinates,
+    demands,
+    service_times,
+    time_windows,
+    depot=0,
+    arc_costs,
+    arc_costs_time_dependent,
+    num_time_bins,
+    bin_seconds,
+    metadata,
+)
+    num_customers_int = require_positive(coerce_int(num_customers, "num_customers"), "num_customers")
+    num_vehicles_int = coerce_optional_int(num_vehicles, "num_vehicles")
+    num_vehicles_int === nothing || require_positive(num_vehicles_int, "num_vehicles")
+    vehicle_capacity_int = require_positive(coerce_int(vehicle_capacity, "vehicle_capacity"), "vehicle_capacity")
+    coordinates_vec = normalize_coordinate_vector(coordinates, "coordinates")
+    demands_vec = normalize_int_vector(demands, "demands")
+    service_times_vec = normalize_int_vector(service_times, "service_times")
+    time_windows_vec = normalize_pair_int_vector(time_windows, "time_windows")
+    depot_int = require_nonnegative(coerce_int(depot, "depot"), "depot")
+    arc_costs_matrix = normalize_arc_costs(arc_costs)
+    arc_costs_td = normalize_arc_costs_time_dependent(arc_costs_time_dependent)
+    num_time_bins_int = require_positive(coerce_int(num_time_bins, "num_time_bins"), "num_time_bins")
+    bin_seconds_int = require_positive(coerce_int(bin_seconds, "bin_seconds"), "bin_seconds")
+    metadata_value = metadata isa InstanceMetadata ? metadata : instance_metadata_from_dict(metadata)
+
+    validate_instance_vectors(num_customers_int, coordinates_vec, demands_vec, depot_int, arc_costs_matrix)
+    validate_vrptw_vectors(num_customers_int, service_times_vec, time_windows_vec)
+    validate_tdvrp_tensor_shape(num_customers_int, num_time_bins_int, bin_seconds_int, arc_costs_td)
+
+    benchmark_name_str = require_choice(coerce_string(benchmark_name, "benchmark_name"), BENCHMARK_NAMES, "benchmark_name")
+    instance_origin_str = require_choice(coerce_string(instance_origin, "instance_origin"), INSTANCE_ORIGINS, "instance_origin")
+
+    static_type = eltype(first(arc_costs_matrix))
+    td_type = eltype(first(first(arc_costs_td)))
+    matrix_type = promote_type(static_type, td_type)
+    arc_costs_promoted = [[matrix_type(value) for value in row] for row in arc_costs_matrix]
+    arc_costs_td_promoted = [[[matrix_type(value) for value in row] for row in m] for m in arc_costs_td]
+
+    return BenchmarkInstanceTDVRP{matrix_type}(
+        coerce_string(instance_id, "instance_id"),
+        instance_origin_str,
+        benchmark_name_str,
+        num_customers_int,
+        num_vehicles_int,
+        vehicle_capacity_int,
+        coordinates_vec,
+        demands_vec,
+        service_times_vec,
+        time_windows_vec,
+        depot_int,
+        arc_costs_promoted,
+        arc_costs_td_promoted,
+        num_time_bins_int,
+        bin_seconds_int,
         metadata_value,
     )
 end
@@ -1688,6 +1825,29 @@ function benchmark_instance_vrptw_payload(value::BenchmarkInstanceVRPTW)
     push!(result, "time_windows" => value.time_windows)
     push!(result, "depot" => value.depot)
     push!(result, "arc_costs" => value.arc_costs)
+    push!(result, "metadata" => instance_metadata_payload(value.metadata))
+    return result
+end
+
+
+function benchmark_instance_tdvrp_payload(value::BenchmarkInstanceTDVRP)
+    result = Pair{String,Any}[
+        "instance_id" => value.instance_id,
+        "instance_origin" => value.instance_origin,
+        "benchmark_name" => value.benchmark_name,
+        "num_customers" => value.num_customers,
+    ]
+    push_if_not_nothing!(result, "num_vehicles", value.num_vehicles)
+    push!(result, "vehicle_capacity" => value.vehicle_capacity)
+    push!(result, "coordinates" => value.coordinates)
+    push!(result, "demands" => value.demands)
+    push!(result, "service_times" => value.service_times)
+    push!(result, "time_windows" => value.time_windows)
+    push!(result, "depot" => value.depot)
+    push!(result, "arc_costs" => value.arc_costs)
+    push!(result, "arc_costs_time_dependent" => value.arc_costs_time_dependent)
+    push!(result, "num_time_bins" => value.num_time_bins)
+    push!(result, "bin_seconds" => value.bin_seconds)
     push!(result, "metadata" => instance_metadata_payload(value.metadata))
     return result
 end
