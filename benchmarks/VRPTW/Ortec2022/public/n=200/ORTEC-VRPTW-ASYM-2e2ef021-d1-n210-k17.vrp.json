@@ -431,7 +431,7 @@
         [15600, 22500],
         [22800, 30600],
         [22800, 30600],
-        [8400, 11700]
+        [8400, 13378]
     ],
     "depot": 0,
     "arc_costs": [
@@ -653,6 +653,7 @@
         "subset": "public",
         "license": "CC BY-NC 4.0",
         "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
-        "source_filename": "ORTEC-VRPTW-ASYM-2e2ef021-d1-n210-k17.txt"
+        "source_filename": "ORTEC-VRPTW-ASYM-2e2ef021-d1-n210-k17.txt",
+        "repair_note": ["customer 210: original TW [8400, 11700] -> repaired TW [8400, 13378] (depot->customer earliest arrival = 13378 s)"]
     }
 }
