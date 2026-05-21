@@ -1,0 +1,16 @@
+SPDX-License-Identifier: CC-BY-NC-4.0
+
+The ORTEC benchmark instances and related redistributed BKS files in this
+directory are provided under their original Creative Commons
+Attribution-NonCommercial 4.0 International license (CC BY-NC 4.0):
+
+https://creativecommons.org/licenses/by-nc/4.0/
+
+This directory contains MAMUT-routing conversions, repairs, metadata, and
+computed BKS records for the static VRPTW layer of the EURO Meets NeurIPS 2022
+Vehicle Routing Competition. Those derived benchmark artifacts are distributed
+with the ORTEC family under the same CC BY-NC 4.0 notice unless an individual
+file states otherwise.
+
+The MIT license in the repository root applies to MAMUT-routing source code,
+not to these ORTEC benchmark data files.

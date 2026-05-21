@@ -1,0 +1,11 @@
+SPDX-License-Identifier: MIT
+
+To the extent MAMUT-routing holds the relevant rights, the MAMUT-routing
+curation artifacts in this directory are distributed under the MIT License in
+the repository root.
+
+This family curates VRPTW material under the 12th DIMACS Implementation
+Challenge cost-minimization convention. This license notice does not claim to
+relicense third-party benchmark definitions, challenge material, or
+third-party best-known solution sources beyond the rights held by
+MAMUT-routing contributors.
