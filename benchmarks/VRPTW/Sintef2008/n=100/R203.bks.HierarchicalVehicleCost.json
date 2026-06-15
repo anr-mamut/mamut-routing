@@ -1,24 +1,23 @@
 {
     "instance_name": "R203",
     "routes": [
-        [50, 33, 81, 65, 51, 1, 69, 32, 90, 63, 64, 11, 62, 88, 31, 30, 76, 3, 79, 78, 9, 20, 66, 71, 35, 34, 29, 68, 77, 80, 24, 25, 54, 12, 28],
-        [52, 7, 47, 36, 46, 45, 18, 27, 26, 39, 67, 23, 72, 21, 40, 53, 87, 57, 41, 22, 75, 56, 55, 4, 74, 73, 2, 13, 97, 37, 100, 98, 93, 61, 17, 5, 60, 89, 58],
-        [94, 95, 59, 92, 42, 15, 43, 14, 44, 38, 86, 16, 91, 85, 99, 96, 6, 84, 83, 8, 82, 48, 49, 19, 10, 70]
+        [27, 52, 18, 45, 46, 36, 64, 11, 62, 88, 31, 30, 76, 3, 79, 78, 9, 35, 34, 29, 68, 12, 26, 13, 58],
+        [50, 33, 81, 65, 71, 51, 1, 69, 39, 67, 23, 72, 73, 21, 40, 53, 87, 2, 41, 22, 75, 56, 74, 4, 55, 25, 54, 24, 80, 77, 28],
+        [94, 95, 97, 92, 98, 37, 42, 57, 15, 43, 14, 44, 38, 86, 16, 85, 59, 99, 96, 6, 84, 83, 8, 48, 47, 49, 19, 10, 63, 90, 32, 66, 20, 70, 7, 82, 17, 61, 91, 100, 93, 5, 60, 89]
     ],
-    "cost": 967.7541501389894,
+    "cost": 939.5033196327311,
     "metadata": {
-        "source": "ils_best",
-        "time_limit_s": 120,
-        "scaling_factor": 1000,
-        "rounding_method": "ceil",
-        "notes": "Solved with ils_best from paper6 vehicle-UB experiment",
-        "authors": "Florian Rascoussier (0nyr)",
+        "source": "sintef",
+        "source_path": "raw_benchmarks/Sintef2008_website_bks/scrapped_sintef_vrptw_solutions/sintef_vrptw_bks_2026-06-15/n=100/R203.sol.txt",
         "status": "heuristic",
         "num_customers": 100,
         "benchmark": "Sintef2008",
-        "date": "2026-03-25 22:33:22",
-        "validated_cost": 967.7541501389894,
-        "validated_num_vehicles": 3
+        "date": "13.05.2026",
+        "sintef_reported_cost": 939.5033196327306,
+        "notes": "Best-known solution from the SINTEF TOP VRPTW website.",
+        "authors": "Victor Allis",
+        "validated_cost": 939.5033196327311,
+        "validated_num_routes": 3
     },
     "objective_function": "HierarchicalVehicleCost"
 }
