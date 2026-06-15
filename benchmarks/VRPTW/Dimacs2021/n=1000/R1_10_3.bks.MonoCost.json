@@ -96,7 +96,6 @@
     "cost": 446490,
     "metadata": {
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/scrapped_sintef_vrptw_solutions/sintef_vrptw_bks_2026-06-15/n=1000/R1_10_3.sol.txt",
         "status": "heuristic",
         "num_customers": 1000,
         "benchmark": "Dimacs2021",

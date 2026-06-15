@@ -45,7 +45,6 @@
         "date": "13.07.2018",
         "reference": "\"New methods of VRP problem optimization\", unpublished result.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=400/RC1_4_8.sol.txt",
         "status": "heuristic",
         "validated_cost": 7772.568093607322,
         "validated_num_vehicles": 36

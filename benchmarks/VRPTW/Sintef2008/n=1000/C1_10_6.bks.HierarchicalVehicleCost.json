@@ -108,7 +108,6 @@
         "date": "2024-11-02",
         "reference": "Not published yet",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=1000/C1_10_6.sol.txt",
         "status": "heuristic",
         "validated_cost": 43830.21254489782,
         "validated_num_vehicles": 99

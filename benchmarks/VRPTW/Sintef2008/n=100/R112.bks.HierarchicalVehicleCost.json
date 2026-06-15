@@ -17,7 +17,6 @@
         "notes": "Solved using a parallel simulated annealing algorithm.",
         "url": "https://sun.aei.polsl.pl/~zjc/best-solutions-solomon.html",
         "source": "czech_website",
-        "source_path": "raw_benchmarks/Sintef2008_Zbigniew_Czech_website_bks/czech_solomon_vrptw_solutions/R112.sol.txt",
         "status": "heuristic",
         "validated_cost": 982.1396794793055,
         "validated_num_vehicles": 9

@@ -22,7 +22,6 @@
         "provided_date": "2025-12-21",
         "notes": "BKS provided by email from Dr. Eduardo Queiroga on behalf of CVRPLIB",
         "status": "heuristic",
-        "source_path": "raw_benchmarks/VRPTW_CVRPLIB/HG/C2_4_8.sol",
         "validated_cost": 37737,
         "validated_num_vehicles": 12
     },

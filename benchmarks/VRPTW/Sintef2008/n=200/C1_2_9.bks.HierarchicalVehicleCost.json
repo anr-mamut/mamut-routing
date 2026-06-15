@@ -27,7 +27,6 @@
         "date": "02/09/2013",
         "reference": "Correction of result from MB - Mester, D. and O. Br\u00e4ysy (2005), \u0093Active Guided Evolution Strategies for Large Scale Vehicle Routing Problems with Time Windows\u0094. Computers & Operations Research 32, 1593-1614.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=200/C1_2_9.sol.txt",
         "status": "heuristic",
         "validated_cost": 2687.827312261309,
         "validated_num_vehicles": 18

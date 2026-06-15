@@ -96,7 +96,6 @@
     "metadata": {
         "cost": 43678.3,
         "source": "pyvrp",
-        "source_path": "raw_benchmarks/Instances/VRPTW/RC1_10_2.sol",
         "status": "heuristic",
         "validated_cost": 436783.0,
         "validated_num_vehicles": 90

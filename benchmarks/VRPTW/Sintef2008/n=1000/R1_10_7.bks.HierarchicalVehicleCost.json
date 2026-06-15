@@ -100,7 +100,6 @@
         "date": "15-01-2024",
         "reference": "Nvidia",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=1000/R1_10_7.sol.txt",
         "status": "heuristic",
         "validated_cost": 43975.469704663534,
         "validated_num_vehicles": 91

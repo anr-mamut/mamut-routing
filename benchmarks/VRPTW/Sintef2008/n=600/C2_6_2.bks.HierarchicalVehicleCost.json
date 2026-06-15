@@ -26,7 +26,6 @@
         "date": "13-11-2018",
         "reference": "\"New Algorithm for VRPTW\", unpublished result of CAINIAO AI.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=600/C2_6_2.sol.txt",
         "status": "heuristic",
         "validated_cost": 8258.19649391923,
         "validated_num_vehicles": 17

@@ -21,7 +21,6 @@
         "date": "",
         "reference": "",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=400/C2_4_7.sol.txt",
         "status": "heuristic",
         "validated_cost": 3894.157884518893,
         "validated_num_vehicles": 12

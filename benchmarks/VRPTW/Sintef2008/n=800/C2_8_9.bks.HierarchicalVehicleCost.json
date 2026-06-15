@@ -32,7 +32,6 @@
         "date": "Jan 08 2018",
         "reference": "http://www.quintiq.com/optimization/vrptw-world-records.html",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=800/C2_8_9.sol.txt",
         "status": "heuristic",
         "validated_cost": 11592.522998820563,
         "validated_num_vehicles": 23

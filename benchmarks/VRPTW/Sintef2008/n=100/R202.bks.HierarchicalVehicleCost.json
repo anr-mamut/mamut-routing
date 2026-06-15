@@ -12,7 +12,6 @@
         "date": "2018-jul-03",
         "reference": "http://shobb.narod.ru/vrppd.html",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/R202.sol.txt",
         "status": "heuristic",
         "validated_cost": 1191.7029687049696,
         "validated_num_vehicles": 3

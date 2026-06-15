@@ -109,7 +109,6 @@
         "date": "02-06-15",
         "reference": "Commercial Software (www.360scheduling.com)",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=1000/C1_10_5.sol.txt",
         "status": "heuristic",
         "validated_cost": 42469.17584521812,
         "validated_num_vehicles": 100

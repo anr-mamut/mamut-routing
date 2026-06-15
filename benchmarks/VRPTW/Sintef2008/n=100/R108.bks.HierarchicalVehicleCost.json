@@ -18,7 +18,6 @@
         "date": 2001,
         "reference": "Technical Report, CS-01-06, Department of Computer Science, Brown University, September 2001.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=100/R108.sol.txt",
         "status": "heuristic",
         "validated_cost": 960.8757791660508,
         "validated_num_vehicles": 9

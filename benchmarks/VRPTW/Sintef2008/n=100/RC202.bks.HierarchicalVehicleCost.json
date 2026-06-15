@@ -8,7 +8,6 @@
     "cost": 1365.6450311683866,
     "metadata": {
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/scrapped_sintef_vrptw_solutions/sintef_vrptw_bks_2026-06-15/n=100/RC202.sol.txt",
         "status": "heuristic",
         "num_customers": 100,
         "benchmark": "Sintef2008",

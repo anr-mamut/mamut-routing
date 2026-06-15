@@ -65,7 +65,6 @@
         "date": "Nov 23 2015",
         "reference": "http://www.quintiq.com/optimization-world-records.aspx",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=600/C1_6_2.sol.txt",
         "status": "heuristic",
         "validated_cost": 14163.307521865669,
         "validated_num_vehicles": 56

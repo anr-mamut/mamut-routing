@@ -45,7 +45,6 @@
         "date": "01.12.2016",
         "reference": "Exploring infeasible and feasible regions of the VRPTW and PDPTW through penalty based tabu search. Working paper.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=400/RC1_4_6.sol.txt",
         "status": "heuristic",
         "validated_cost": 8164.977778194032,
         "validated_num_vehicles": 36

@@ -17,7 +17,6 @@
         "date": "05-04-2012",
         "reference": "A parallel EAX-based memetic algorithm for the vehicle routing problem with time windows",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=400/R2_4_7.sol.txt",
         "status": "heuristic",
         "validated_cost": 5018.531652416263,
         "validated_num_vehicles": 8

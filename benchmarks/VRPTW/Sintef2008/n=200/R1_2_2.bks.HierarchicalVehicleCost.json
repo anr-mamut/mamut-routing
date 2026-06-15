@@ -27,7 +27,6 @@
         "date": "30.11.2018",
         "reference": "\"New methods of VRP problem optimization\", unpublished result.",
         "source": "combopt",
-        "source_path": "raw_benchmarks/vrp-benchmarks/best_known_solutions/GehringHomberger/2012-07-31/r1_2_2.18_4040.6018.txt",
         "combopt_when": "2012-07-31",
         "combopt_who": ["VCGP"],
         "combopt_distance_reported": 4040.6018,

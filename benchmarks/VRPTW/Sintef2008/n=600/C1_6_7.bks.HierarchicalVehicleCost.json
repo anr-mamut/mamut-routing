@@ -66,7 +66,6 @@
         "date": "2021-12-19",
         "reference": "\"New methods of VRP problem optimization\", unpublished research funded by The National Centre for Research and Development.  \"New methods of VRP problem optimization\", project number: POIR.01.01.01.-00-0222/16.",
         "source": "sintef",
-        "source_path": "raw_benchmarks/Sintef2008_website_bks/sintef_vrptw_solutions/n=600/C1_6_7.sol.txt",
         "status": "heuristic",
         "validated_cost": 15731.198940174025,
         "validated_num_vehicles": 57
